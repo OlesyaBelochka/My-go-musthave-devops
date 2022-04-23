@@ -16,11 +16,39 @@ import (
 	"time"
 )
 
+const pollInterval = 2
+const reportInterval = 10
+
 type gauge float64
 type counter int64
 
-const pollInterval = 2
-const reportInterval = 10
+var mm = map[string]gauge{
+	"Alloc":         0,
+	"BuckHashSys":   0,
+	"Frees":         0,
+	"GCCPUFraction": 0,
+	"GCSys":         0,
+	"HeapAlloc":     0,
+	"HeapIdle":      0,
+	"HeapInuse":     0,
+	"HeapObjects":   0,
+	"HeapReleased":  0,
+	"HeapSys":       0,
+	"LastGC":        0,
+	"MCacheInuse":   0,
+	"MCacheSys":     0,
+	"MSpanInuse":    0,
+	"MSpanSys":      0,
+	"Mallocs":       0,
+	"NextGC":        0,
+	"NumForcedGC":   0,
+	"NumGC":         0,
+	"RandomValue":   0,
+}
+
+var mc = map[string]counter{
+	"PollCount": 0,
+}
 
 func upDateMetrics(st *runtime.MemStats) {
 
@@ -56,35 +84,6 @@ func upDateMetrics(st *runtime.MemStats) {
 	mc["PollCount"]++
 
 }
-
-var mm = map[string]gauge{
-	"Alloc":         0,
-	"BuckHashSys":   0,
-	"Frees":         0,
-	"GCCPUFraction": 0,
-	"GCSys":         0,
-	"HeapAlloc":     0,
-	"HeapIdle":      0,
-	"HeapInuse":     0,
-	"HeapObjects":   0,
-	"HeapReleased":  0,
-	"HeapSys":       0,
-	"LastGC":        0,
-	"MCacheInuse":   0,
-	"MCacheSys":     0,
-	"MSpanInuse":    0,
-	"MSpanSys":      0,
-	"Mallocs":       0,
-	"NextGC":        0,
-	"NumForcedGC":   0,
-	"NumGC":         0,
-	"RandomValue":   0,
-}
-
-var mc = map[string]counter{
-	"PollCount": 0,
-}
-
 func sendRequest(fullPuth string, client http.Client) {
 	data := url.Values{}
 	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
@@ -116,6 +115,7 @@ func getRequest(endpoint string, client http.Client) {
 
 }
 func main() {
+
 	fmt.Println("Начало...")
 	st := new(runtime.MemStats)
 
