@@ -26,7 +26,7 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			want{http.StatusOK, "text/plain"},
 		},
 		{"bad", "/update/wewfsf/HeapInuse",
-			want{http.StatusBadRequest, "text/plain"},
+			want{http.StatusNotFound, "text/plain"},
 		},
 	}
 	fmt.Println("start..")
@@ -39,9 +39,6 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			h.ServeHTTP(w, request)
 			result := w.Result()
 
-			//if result.StatusCode != tt.want.code {
-			//	t.Errorf("Expected status code %d, got %d", tt.want.code, w.Code)
-			//}
 			assert.Equal(t, result.StatusCode, tt.want.code)
 			assert.Contains(t, tt.want.contentType, result.Header.Get("Content-Type"))
 
