@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
@@ -10,18 +12,8 @@ import (
 
 func main() {
 
-	//http.HandleFunc("/update/", handlers.HandleMetrics)
-	//log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
-
-	//mux := http.NewServeMux()
-	//mux.Handle("/", http.NotFoundHandler())
-	//mux.HandleFunc("/update/", handlers.HandleMetrics)
-	////mux.HandleFunc("/update/counter/", handlers.HandleGaugeC)
-	////
-	//log.Fatal(http.ListenAndServe("127.0.0.1:8080", mux))
-
 	mux := chi.NewRouter()
-
+	fmt.Println(variables.MC["Alloc"])
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
