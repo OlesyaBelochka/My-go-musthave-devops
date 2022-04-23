@@ -3,14 +3,12 @@ package handlers
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-
-	//"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestHandleMetrics(t *testing.T) {
+func TestHandleUpdateMetrics(t *testing.T) {
 	type want struct {
 		code        int
 		contentType string
@@ -37,7 +35,7 @@ func TestHandleMetrics(t *testing.T) {
 
 			request := httptest.NewRequest(http.MethodPost, tt.request, nil)
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(HandleMetrics)
+			h := http.HandlerFunc(HandleUpdateMetrics)
 			h.ServeHTTP(w, request)
 			result := w.Result()
 
