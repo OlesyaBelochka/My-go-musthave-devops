@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
@@ -19,20 +18,20 @@ func main() {
 	mux.Use(middleware.Recoverer)
 
 	mux.Get("/", HandleGetAllMetrics)
-	mux.Get("/{anystring}", func(w http.ResponseWriter, r *http.Request) {
-		sendStatus(w, 600)
-		fmt.Println("anystring")
-	})
-	mux.Get("/{anystring}/{mType}/{mName}", HandleGetMetric)
+	mux.Get("/value/{mType}/{mName}", HandleGetMetric)
 	mux.Get("/value/{mType}/{mName}/{mValue}", func(w http.ResponseWriter, r *http.Request) {
 
-		//	fmt.Println("#1")
-
-		sendStatus(w, 505)
+		sendStatus(w, 700)
 
 	})
+
+	//mux.Get("/{anystring}", func(w http.ResponseWriter, r *http.Request) {
+	//	sendStatus(w, 600)
+	//	fmt.Println("anystring")
+	//})
 
 	mux.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", mux))
+
 }
