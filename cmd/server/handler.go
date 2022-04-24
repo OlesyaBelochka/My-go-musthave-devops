@@ -36,7 +36,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 			} else {
 
-				sendStatus(w, http.StatusNotFound) //404
+				sendStatus(w, 527) //527
 				return
 			}
 
@@ -45,7 +45,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 				answer = strconv.FormatInt(int64(value), 10)
 			} else {
 
-				sendStatus(w, http.StatusNotFound) //404
+				sendStatus(w, 527) //527
 				return
 			}
 		}
