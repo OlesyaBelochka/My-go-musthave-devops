@@ -35,7 +35,7 @@ func main() {
 	////log.Fatal(http.ListenAndServe(":8080", mux))
 	//
 
-	mux := chi.NewMux()
+	mux := chi.NewRouter()
 
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	//mux.Use(middleware.RequestID)
@@ -53,6 +53,9 @@ func main() {
 
 	mux.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080", mux))
+	log.Fatal(http.ListenAndServe(":8080", mux))
+	//address := "127.0.0.1:8080"
+	//
+	//log.Fatal(http.ListenAndServe(address, mux))
 
 }
