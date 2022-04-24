@@ -20,7 +20,7 @@ func main() {
 	mux.Use(middleware.Recoverer)
 
 	mux.Get("/", HandleGetAllMetrics)
-	mux.Get("/update/{mType}/{mName}", HandleGetMetric)
+	mux.Get("/value/{mType}/{mName}", HandleGetMetric)
 	mux.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", mux))
 }
