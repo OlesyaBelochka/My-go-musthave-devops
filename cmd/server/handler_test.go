@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"fmt"
@@ -26,7 +26,13 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			want{http.StatusOK, "text/plain"},
 		},
 		{"bad", "/update/wewfsf/HeapInuse",
-			want{http.StatusNotFound, "text/plain"},
+			want{http.StatusNotImplemented, "text/plain"},
+		},
+		{"noneGauge", "/update/gauge/HeapInuse/none",
+			want{http.StatusBadRequest, "text/plain"},
+		},
+		{"noneCounter", "/update/counter/PollCount/none",
+			want{http.StatusBadRequest, "text/plain"},
 		},
 	}
 	fmt.Println("start..")
