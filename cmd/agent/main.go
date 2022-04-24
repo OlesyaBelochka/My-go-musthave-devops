@@ -48,7 +48,7 @@ func getRequest(endpoint string, client http.Client) {
 		fullPuth = endpoint + strings.Replace(reflect.TypeOf(variables.MC[k]).String(), "variables.", "", -1) + "/" + k + "/" + strconv.FormatFloat(float64(v), 'f', -1, 64)
 		log.Println(fullPuth)
 		sendRequest(fullPuth, client)
-		variables.MC["PollCount"] = 0 // обнуляем????
+		//variables.MC["PollCount"] = 0 // обнуляем????
 	}
 
 }

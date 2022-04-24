@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-func sendStatusNotFound(w http.ResponseWriter) {
+func sendStatus(w http.ResponseWriter, status int) {
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(status) // 404
 
-	http.Error(w, "Status not found", http.StatusNotFound)
+	http.Error(w, "Status not found", status)
 
 }
 func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 			} else {
 
-				sendStatusNotFound(w)
+				sendStatus(w, http.StatusNotFound) //404
 				return
 			}
 
@@ -50,7 +50,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 				answer = strconv.FormatInt(int64(value), 10)
 			} else {
 
-				sendStatusNotFound(w)
+				sendStatus(w, http.StatusNotFound) //404
 				return
 			}
 		}
@@ -60,9 +60,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusBadRequest)
-		http.Error(w, "Wrong URL", http.StatusBadRequest)
+		sendStatus(w, http.StatusBadRequest) // 400
 
 	}
 
@@ -74,20 +72,31 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 	if len(a) == 5 && (strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter") {
 		if strings.ToLower(a[2]) == "gauge" {
-			val2, _ := strconv.ParseFloat(a[4], 64)
+			val2, err := strconv.ParseFloat(a[4], 64)
+
+			if err != nil {
+				sendStatus(w, http.StatusBadRequest) // 400
+				return
+			}
+
 			variables.MG[a[3]] = variables.Gauge(val2)
 		} else {
-			val, _ := strconv.Atoi(a[4])
+			val, err := strconv.Atoi(a[4])
+
+			if err != nil {
+				sendStatus(w, http.StatusBadRequest) // 400
+				return
+			}
+
 			variables.MC["PollCount"] += variables.Counter(val)
+
 		}
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
 		//	w.Write([]byte("метки обновились."))
 	} else {
 
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusNotFound)
-		http.Error(w, "Wrong URL", http.StatusNotFound)
+		sendStatus(w, http.StatusNotImplemented) // 401
 	}
 
 }
