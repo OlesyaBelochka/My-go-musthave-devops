@@ -41,7 +41,7 @@ func getRequest(endpoint string, client http.Client) {
 	for k, v := range variables.MG {
 
 		fullPuth = endpoint + strings.ToLower(strings.Replace(reflect.TypeOf(variables.MG[k]).String(), "variables.", "", -1)) + "/" + k + "/" + strconv.FormatFloat(float64(v), 'f', -1, 64)
-		//log.Println(fullPuth)
+		log.Println(fullPuth)
 		sendRequest(fullPuth, client)
 	}
 

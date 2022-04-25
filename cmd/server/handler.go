@@ -13,7 +13,7 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(status) // 404
-
+	fmt.Println(status)
 	http.Error(w, "Status not found", status)
 
 }
@@ -34,7 +34,9 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 	for i, s := range a {
 		fmt.Println(i, s)
 	}
-	if len(a) > 4 && strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter" {
+	fmt.Println(len(a))
+	fmt.Println(strings.ToLower(a[2]))
+	if len(a) >= 4 && (strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter") {
 
 		if strings.ToLower(a[2]) == "gauge" {
 			if value, inMap := variables.MG[a[3]]; inMap {
