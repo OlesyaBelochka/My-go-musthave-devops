@@ -119,10 +119,10 @@ func getMetric(a []string) (string, int, error) {
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetrics")
+	//fmt.Println("HandleUpdateMetrics")
 	var a = strings.Split(r.URL.String(), "/")
 
-	fmt.Println(r.URL.String())
+	//fmt.Println(r.URL.String())
 
 	val, code, err := getMetric(a)
 
