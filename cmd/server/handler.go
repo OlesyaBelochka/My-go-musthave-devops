@@ -11,10 +11,11 @@ import (
 
 func sendStatus(w http.ResponseWriter, status int) {
 
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(status) // 404
-	fmt.Println(status)
+	//w.Header().Set("Content-Type", "text/plain")
+	//w.WriteHeader(status) // 404
+	//fmt.Println(status)
 
+	http.Error(w, strconv.Itoa(status), status)
 	//http.Error(w, strconv.Itoa(status),status)
 
 }
@@ -43,20 +44,24 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 		if strings.ToLower(a[2]) == "gauge" {
 			if value, inMap := variables.MG[a[3]]; inMap {
+				fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
+
 				answer = strconv.FormatFloat(float64(value), 'f', 10, 64)
 
 			} else {
 				fmt.Println("не найдено имя " + a[3] + " в мапе")
-				sendStatus(w, 527) //527
+				sendStatus(w, http.StatusNotFound) //404
 				return
 			}
 
 		} else {
 			if value, inMap := variables.MC[a[3]]; inMap {
+
+				fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
 				answer = strconv.FormatInt(int64(value), 10)
 			} else {
 				fmt.Println("не найдено имя " + a[3] + " в мапе")
-				sendStatus(w, 527) //527
+				sendStatus(w, http.StatusNotFound) //404
 				return
 			}
 		}
@@ -100,6 +105,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
+
 		//	w.Write([]byte("метки обновились."))
 	} else {
 
