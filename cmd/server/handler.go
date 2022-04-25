@@ -14,7 +14,8 @@ func sendStatus(w http.ResponseWriter, status int) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(status) // 404
 	fmt.Println(status)
-	http.Error(w, "Status not found", status)
+
+	//http.Error(w, strconv.Itoa(status),status)
 
 }
 func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,9 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 	var a = strings.Split(r.URL.String(), "/")
 	var answer string
 
-	fmt.Println(a)
+	fmt.Println(r.URL.String())
+
+	//fmt.Println(a)
 	for i, s := range a {
 		fmt.Println(i, s)
 	}
@@ -43,8 +46,8 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 				answer = strconv.FormatFloat(float64(value), 'f', 10, 64)
 
 			} else {
-
-				sendStatus(w, 525) //527
+				fmt.Println("не найдено имя " + a[3] + " в мапе")
+				sendStatus(w, 527) //527
 				return
 			}
 
@@ -52,7 +55,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 			if value, inMap := variables.MC[a[3]]; inMap {
 				answer = strconv.FormatInt(int64(value), 10)
 			} else {
-
+				fmt.Println("не найдено имя " + a[3] + " в мапе")
 				sendStatus(w, 527) //527
 				return
 			}
