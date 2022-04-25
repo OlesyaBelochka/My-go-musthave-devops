@@ -31,7 +31,10 @@ func TestHandleUpdateMetrics(t *testing.T) {
 		{"noneGauge", "/update/gauge/HeapInuse/none",
 			want{http.StatusBadRequest, "text/plain"},
 		},
-		{"noneCounter", "/update/counter/PollCount/none",
+		{"testCounter100", "/update/counter/testCounter/100",
+			want{http.StatusOK, "text/plain"},
+		},
+		{"noneCounter", "/update/counter/testCounter/non",
 			want{http.StatusBadRequest, "text/plain"},
 		},
 	}

@@ -129,5 +129,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusNotImplemented) // 401
 		}
 
+	} else {
+		sendStatus(w, http.StatusNotImplemented) // 401
 	}
 }
