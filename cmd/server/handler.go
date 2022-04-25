@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
@@ -19,11 +18,31 @@ func sendStatus(w http.ResponseWriter, status int) {
 	//http.Error(w, strconv.Itoa(status),status)
 
 }
+
 func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("HandleUpdateMetrics")
 
-	json.NewEncoder(w).Encode(variables.MG)
-	json.NewEncoder(w).Encode(variables.MC)
+	w.Header().Set("Content-Type", "text/plain")
+	html := ""
+
+	for s, counter := range variables.MG {
+		fmt.Println(s)
+		fmt.Println(counter)
+
+		html += fmt.Sprintf("\n %s : %.3f", s, counter)
+
+	}
+	for s, counter := range variables.MC {
+		fmt.Println(s)
+		fmt.Println(counter)
+
+		html += fmt.Sprintf("\n %s : %d", s, counter)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(html))
+
+	//json.NewEncoder(w).Encode(variables.MG)
+	//json.NewEncoder(w).Encode(variables.MC)
 }
 
 func getMetric(a []string) (string, int, error) {
