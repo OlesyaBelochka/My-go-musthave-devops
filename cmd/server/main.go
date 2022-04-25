@@ -48,8 +48,10 @@ func main() {
 		r.Get("/", HandleGetMetric)
 		// GET /value/Gauge
 		r.Get("/{mType}", HandleGetMetric)
+		r.Get("/{mType}/", HandleGetMetric)
 		// GET /value/Gauge/GCCPUFraction
 		r.Get("/{mType}/{mName}", HandleGetMetric)
+		r.Get("/{mType}/{mName}/", HandleGetMetric)
 		// GETGET /value/Gauge/GCCPUFraction/1
 		r.Get("/{mType}/{mName}/{mValue}/", HandleGetMetric)
 	})
@@ -61,7 +63,7 @@ func main() {
 	//
 	//})
 	//
-	//r.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
+	r.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 
 	http.ListenAndServe("127.0.0.1:8080", r)
 	//address := "127.0.0.1:8080"

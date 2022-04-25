@@ -30,8 +30,11 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 	var a = strings.Split(r.URL.String(), "/")
 	var answer string
 
-	fmt.Println(len(a))
-	if len(a) == 4 && (strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter") {
+	fmt.Println(a)
+	for i, s := range a {
+		fmt.Println(i, s)
+	}
+	if len(a) > 4 && strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter" {
 
 		if strings.ToLower(a[2]) == "gauge" {
 			if value, inMap := variables.MG[a[3]]; inMap {
