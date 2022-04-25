@@ -21,7 +21,7 @@ func main() {
 		// GET /value
 		r.Get("/", HandleGetMetric)
 
-		r.Get("/{mType}", HandleGetMetric)
+		r.Get("/{mType}*", HandleGetMetric)
 
 	})
 
