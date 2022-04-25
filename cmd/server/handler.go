@@ -50,11 +50,11 @@ func getMetric(a []string) (string, int, error) {
 		case "counter":
 
 			if value, inMap := variables.MC[a[3]]; inMap {
-				//	fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
-				answer = fmt.Sprintf("%.3f", value)
+				//fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
+				answer = fmt.Sprintf("%d", value)
 				st = http.StatusOK
 			} else {
-				//	fmt.Println("не найдено имя " + a[3] + " в мапе")
+				//fmt.Println("не найдено имя " + a[3] + " в мапе")
 				err = fmt.Errorf("не найдено имя %v", a[3])
 				st = http.StatusNotFound //404
 				answer = ""
