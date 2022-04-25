@@ -17,18 +17,13 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/", HandleGetAllMetrics)
-	r.Get("/{mType}*", HandleGetMetric)
+	r.Route("/value", func(r chi.Router) {
+		// GET /value
+		r.Get("/", HandleGetMetric)
 
-	//r.Route("/value", func(r chi.Router) {
-	//	// GET /value
-	//	r.Get("/", HandleGetMetric)
-	//	// GET /value/Gauge
-	//
-	//	//r.Get("/{mType}/", HandleGetMetric)
-	//	//// GET /value/Gauge/GCCPUFraction
-	//	//r.Get("/{mType}/{mName}", HandleGetMetric)
-	//	//r.Get("/{mType}/{mName}/", HandleGetMetric)
-	//})
+		r.Get("/{mType}", HandleGetMetric)
+
+	})
 
 	r.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 
