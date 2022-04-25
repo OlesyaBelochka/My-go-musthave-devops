@@ -12,10 +12,8 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(status) // 404
-	//fmt.Println(status)
 
 	http.Error(w, strconv.Itoa(status), status)
-	//http.Error(w, strconv.Itoa(status),status)
 
 }
 
@@ -41,8 +39,6 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(html))
 
-	//json.NewEncoder(w).Encode(variables.MG)
-	//json.NewEncoder(w).Encode(variables.MC)
 }
 
 func getMetric(a []string) (string, int, error) {
@@ -51,43 +47,41 @@ func getMetric(a []string) (string, int, error) {
 	var st int
 	var err error
 
-	if len(a[2]) > 4 {
-		switch strings.ToLower(a[2]) {
-		case "gauge":
+	if len(a[2]) < 4 {
+		st = http.StatusBadRequest
+		return answer, st, err
+	}
 
-			if value, inMap := variables.MG[a[3]]; inMap {
-				//	fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
-				answer = fmt.Sprintf("%.3f", value)
-				st = http.StatusOK
-			} else {
-				//	fmt.Println("не найдено имя " + a[3] + " в мапе")
-				err = fmt.Errorf("не найдено имя %v", a[3])
-				st = http.StatusNotFound //404
-				answer = ""
-			}
+	switch strings.ToLower(a[2]) {
+	case "gauge":
 
-		case "counter":
-
-			if value, inMap := variables.MC[a[3]]; inMap {
-				//fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
-				answer = fmt.Sprintf("%d", value)
-				st = http.StatusOK
-			} else {
-				//fmt.Println("не найдено имя " + a[3] + " в мапе")
-				err = fmt.Errorf("не найдено имя %v", a[3])
-				st = http.StatusNotFound //404
-				answer = ""
-			}
-
-		default:
-
-			st = http.StatusBadRequest
-
+		if value, inMap := variables.MG[a[3]]; inMap {
+			//	fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
+			answer = fmt.Sprintf("%.3f", value)
+			st = http.StatusOK
+		} else {
+			//	fmt.Println("не найдено имя " + a[3] + " в мапе")
+			err = fmt.Errorf("не найдено имя %v", a[3])
+			st = http.StatusNotFound //404
+			answer = ""
 		}
-	} else {
-		//err = fmt.Errorf("не найдено имя %v", a[3])
-		st = http.StatusBadRequest //404
-		//answer = ""
+
+	case "counter":
+
+		if value, inMap := variables.MC[a[3]]; inMap {
+			//fmt.Println("нашли имя"+a[3]+" в мапе и его значение = ", value)
+			answer = fmt.Sprintf("%d", value)
+			st = http.StatusOK
+		} else {
+			//fmt.Println("не найдено имя " + a[3] + " в мапе")
+			err = fmt.Errorf("не найдено имя %v", a[3])
+			st = http.StatusNotFound //404
+			answer = ""
+		}
+
+	default:
+
+		st = http.StatusBadRequest
 
 	}
 
@@ -115,40 +109,40 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("HandleUpdateMetrics")
 	var a = strings.Split(r.URL.String(), "/")
 
-	if len(a) == 5 && (strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter") {
+	if len(a) != 5 && (strings.ToLower(a[2]) != "gauge" || strings.ToLower(a[2]) != "counter") {
+		sendStatus(w, http.StatusNotImplemented)
+		return
+	}
 
-		switch strings.ToLower(a[2]) {
+	switch strings.ToLower(a[2]) {
 
-		case "gauge":
-			val2, err := strconv.ParseFloat(a[4], 64)
+	case "gauge":
+		val2, err := strconv.ParseFloat(a[4], 64)
 
-			if err != nil {
-				sendStatus(w, http.StatusBadRequest) // 400
-				return
-			}
-			variables.MG[a[3]] = variables.Gauge(val2)
-			w.Header().Set("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusOK)
+		if err != nil {
+			sendStatus(w, http.StatusBadRequest) // 400
+			return
+		}
+		variables.MG[a[3]] = variables.Gauge(val2)
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
 
-		case "counter":
+	case "counter":
 
-			val, err := strconv.Atoi(a[4])
+		val, err := strconv.Atoi(a[4])
 
-			if err != nil {
-				sendStatus(w, http.StatusBadRequest) // 400
-				return
-			}
-
-			variables.MC[a[3]] += variables.Counter(val)
-
-			w.Header().Set("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusOK)
-
-		default:
-			sendStatus(w, http.StatusNotImplemented) // 401
+		if err != nil {
+			sendStatus(w, http.StatusBadRequest) // 400
+			return
 		}
 
-	} else {
+		variables.MC[a[3]] += variables.Counter(val)
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+
+	default:
 		sendStatus(w, http.StatusNotImplemented) // 401
 	}
+
 }
