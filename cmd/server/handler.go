@@ -25,9 +25,12 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("HandleGetMetric")
 
 	var a = strings.Split(r.URL.String(), "/")
 	var answer string
+
+	fmt.Println(len(a))
 	if len(a) == 4 && (strings.ToLower(a[2]) == "gauge" || strings.ToLower(a[2]) == "counter") {
 
 		if strings.ToLower(a[2]) == "gauge" {
@@ -36,7 +39,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 			} else {
 
-				sendStatus(w, 527) //527
+				sendStatus(w, 525) //527
 				return
 			}
 

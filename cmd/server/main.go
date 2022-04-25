@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
-	"log"
 	"net/http"
 )
 
@@ -35,7 +34,7 @@ func main() {
 	////log.Fatal(http.ListenAndServe(":8080", mux))
 	//
 
-	mux := chi.NewRouter()
+	r := chi.NewRouter()
 
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	//mux.Use(middleware.RequestID)
@@ -43,17 +42,28 @@ func main() {
 	//mux.Use(middleware.Logger)
 	//mux.Use(middleware.Recoverer)
 
-	mux.Get("/", HandleGetAllMetrics)
-	mux.Get("/value/{mType}/{mName}", HandleGetMetric)
-	mux.Get("/value/{mType}/{mName}/{mValue}", func(w http.ResponseWriter, r *http.Request) {
-
-		sendStatus(w, 700)
-
+	r.Get("/", HandleGetAllMetrics)
+	r.Route("/value", func(r chi.Router) {
+		// GET /value
+		r.Get("/", HandleGetMetric)
+		// GET /value/Gauge
+		r.Get("/{mType}", HandleGetMetric)
+		// GET /value/Gauge/GCCPUFraction
+		r.Get("/{mType}/{mName}", HandleGetMetric)
+		// GETGET /value/Gauge/GCCPUFraction/1
+		r.Get("/{mType}/{mName}/{mValue}/", HandleGetMetric)
 	})
 
-	mux.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
+	//r.Get("/value/{mType}/{mName}", HandleGetMetric)
+	//r.Get("/value/{mType}/{mName}/{mValue}", func(w http.ResponseWriter, r *http.Request) {
+	//
+	//	sendStatus(w, 700)
+	//
+	//})
+	//
+	//r.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	http.ListenAndServe("127.0.0.1:8080", r)
 	//address := "127.0.0.1:8080"
 	//
 	//log.Fatal(http.ListenAndServe(address, mux))
