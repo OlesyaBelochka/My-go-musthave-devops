@@ -26,17 +26,13 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	html := ""
 
 	for s, counter := range variables.MG {
-		fmt.Println(s)
-		fmt.Println(counter)
 
-		html += fmt.Sprintf("\n %s : %.3f", s, counter)
+		html += fmt.Sprintf("%s : %.3f\n", s, counter)
 
 	}
 	for s, counter := range variables.MC {
-		fmt.Println(s)
-		fmt.Println(counter)
 
-		html += fmt.Sprintf("\n %s : %d", s, counter)
+		html += fmt.Sprintf("%s : %d\n", s, counter)
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(html))

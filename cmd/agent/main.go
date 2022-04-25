@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,7 +26,6 @@ func sendRequest(fullPuth string, client http.Client) {
 	_, err := client.Do(req)
 
 	if err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 
@@ -41,21 +38,22 @@ func getRequest(endpoint string, client http.Client) {
 	for k, v := range variables.MG {
 
 		fullPuth = endpoint + strings.ToLower(strings.Replace(reflect.TypeOf(variables.MG[k]).String(), "variables.", "", -1)) + "/" + k + "/" + strconv.FormatFloat(float64(v), 'f', -1, 64)
-		log.Println(fullPuth)
+		//log.Println(fullPuth)
 		sendRequest(fullPuth, client)
 	}
 
 	for k, v := range variables.MC {
 		fullPuth = endpoint + strings.ToLower(strings.Replace(reflect.TypeOf(variables.MC[k]).String(), "variables.", "", -1)) + "/" + k + "/" + strconv.FormatInt(int64(v), 10)
-		log.Println(fullPuth)
+		//log.Println(fullPuth)
 		sendRequest(fullPuth, client)
+
 		variables.MC["PollCount"] = 0 // обнуляем????
 	}
 
 }
 func main() {
 
-	fmt.Println("Начало...")
+	//fmt.Println("Начало...")
 	st := new(runtime.MemStats)
 
 	endpoint := "http://127.0.0.1:8080/update/"
@@ -86,7 +84,9 @@ func main() {
 			updater.UpdateMetrics(st)
 
 		case <-osSigChan:
-			break
+			os.Exit(1)
+			return
+
 		}
 	}
 
