@@ -13,7 +13,9 @@ func sendStatus(w http.ResponseWriter, status int) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(status) // 404
 
-	http.Error(w, strconv.Itoa(status), status)
+	if status != http.StatusOK {
+		http.Error(w, strconv.Itoa(status), status)
+	}
 
 }
 
@@ -90,10 +92,7 @@ func getMetric(a []string) (string, int, error) {
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
-	//fmt.Println("HandleUpdateMetrics")
 	var a = strings.Split(r.URL.String(), "/")
-
-	//fmt.Println(r.URL.String())
 
 	val, code, err := getMetric(a)
 
@@ -106,7 +105,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("HandleUpdateMetrics")
+
 	var a = strings.Split(r.URL.String(), "/")
 
 	if len(a) != 5 && (strings.ToLower(a[2]) != "gauge" || strings.ToLower(a[2]) != "counter") {
@@ -124,8 +123,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		variables.MG[a[3]] = variables.Gauge(val2)
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
+		sendStatus(w, http.StatusOK)
 
 	case "counter":
 
@@ -137,9 +135,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		variables.MC[a[3]] += variables.Counter(val)
-
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
+		sendStatus(w, http.StatusOK)
 
 	default:
 		sendStatus(w, http.StatusNotImplemented) // 401
