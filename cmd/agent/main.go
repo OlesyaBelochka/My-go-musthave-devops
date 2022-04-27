@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -31,7 +30,7 @@ func sendRequest(fullPuth string, client http.Client) {
 	_, err := client.Do(req)
 
 	if err != nil {
-		log.Printf("Sending failed", err)
+		//	log.Print("Sending failed", err)
 		os.Exit(1)
 
 	}
