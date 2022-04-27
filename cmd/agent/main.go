@@ -20,6 +20,7 @@ const pollInterval = 2
 const reportInterval = 10
 
 func sendRequest(fullPuth string, client http.Client) {
+
 	if variables.ShowLog {
 		fmt.Println(fullPuth)
 	}
