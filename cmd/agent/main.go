@@ -94,7 +94,7 @@ func main() {
 
 		case <-osSigChan:
 			os.Exit(1)
-
+			return
 		}
 	}
 
