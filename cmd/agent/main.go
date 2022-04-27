@@ -32,7 +32,7 @@ func sendRequest(fullPuth string, client http.Client) {
 
 	if err != nil {
 		log.Print("Sending failed", err)
-		//os.Exit(1)
+		os.Exit(1)
 
 	}
 
