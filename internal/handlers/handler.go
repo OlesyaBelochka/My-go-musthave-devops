@@ -121,27 +121,23 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	if variables.ShowLog {
-		fmt.Println("HandleUpdateMetrics")
-	}
-	var a = strings.Split(r.URL.String(), "/")
+
+	//var a = strings.Split(r.URL.String(), "/")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 	mVal := chi.URLParam(r, "mValue")
 
 	if variables.ShowLog {
+		fmt.Println("HandleUpdateMetrics")
 		fmt.Println("mType", mType)
 		fmt.Println("mName", mName)
 		fmt.Println("mVal", mVal)
+		fmt.Println(mName == "", mVal == "", (mType != "gauge" && mType != "counter"))
 	}
 
-	if mName == "" || mVal == "" {
-		if variables.ShowLog {
-			fmt.Println(mName == "", mVal == "")
-		}
-
-		sendStatus(w, http.StatusNotImplemented)
+	if mName == "" || mVal == "" || (mType != "gauge" && mType != "counter") {
+		sendStatus(w, http.StatusNotImplemented) // 501
 		return
 	}
 
@@ -159,7 +155,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 	case "counter":
 
-		val, err := strconv.Atoi(a[4])
+		val, err := strconv.Atoi(mVal)
 
 		if err != nil {
 			sendStatus(w, http.StatusBadRequest) // 400
@@ -170,7 +166,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 		sendStatus(w, http.StatusOK)
 
 	default:
-		sendStatus(w, http.StatusNotImplemented) // 401
+		sendStatus(w, http.StatusNotImplemented) // 501
 	}
 
 }
