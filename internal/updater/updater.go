@@ -1,9 +1,10 @@
 package updater
 
 import (
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"math/rand"
 	"runtime"
+
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
 
 func UpdateMetrics(st *runtime.MemStats) {
