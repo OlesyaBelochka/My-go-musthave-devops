@@ -26,7 +26,8 @@ func sendRequest(fullPuth string, client http.Client) {
 	_, err := client.Do(req)
 
 	if err != nil {
-		os.Exit(1)
+		//os.Exit(1)
+		panic(err)
 	}
 
 }
