@@ -36,16 +36,16 @@ func sendRequest(fullPuth string, client http.Client) {
 
 }
 
-func getRequest(URL string, client http.Client) {
+func getRequest(url string, client http.Client) {
 
 	for k, v := range variables.MG {
 
-		sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
+		sendRequest(fmt.Sprintf("%sgauge/%s/%f", url, k, v), client)
 	}
 
 	for k, v := range variables.MC {
 
-		sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
+		sendRequest(fmt.Sprintf("%scounter/%s/%d", url, k, v), client)
 
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
@@ -54,7 +54,7 @@ func getRequest(URL string, client http.Client) {
 func main() {
 	st := new(runtime.MemStats)
 
-	endpoint := "/update/"
+	//endpoint := "/update/"
 
 	client := http.Client{}
 
@@ -81,7 +81,9 @@ func main() {
 				fmt.Println("#send..")
 			}
 
-			getRequest("http://"+variables.IPServer+endpoint, client)
+			//getRequest("http://"+variables.IPServer+endpoint, client)
+
+			getRequest("http://127.0.0.1:8080/update/", client)
 
 		case <-timer.C:
 
