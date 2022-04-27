@@ -1,19 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
 
 const pollInterval = 2
@@ -21,40 +20,43 @@ const reportInterval = 10
 
 func sendRequest(fullPuth string, client http.Client) {
 
-	if variables.ShowLog {
-		fmt.Println(fullPuth)
-	}
-
 	data := url.Values{}
 	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "text/plain")
 	_, err := client.Do(req)
 
 	if err != nil {
-		log.Printf("Sending failed", err)
+		os.Exit(1)
 	}
 
 }
 
-func getRequest(url string, client http.Client) {
+func getRequest(endpoint string, client http.Client) {
+
+	var fullPuth string
 
 	for k, v := range variables.MG {
 
-		sendRequest(fmt.Sprintf("%sgauge/%s/%f", url, k, v), client)
+		fullPuth = endpoint + strings.ToLower(strings.Replace(reflect.TypeOf(variables.MG[k]).String(), "variables.", "", -1)) + "/" + k + "/" + strconv.FormatFloat(float64(v), 'f', -1, 64)
+		//log.Println(fullPuth)
+		sendRequest(fullPuth, client)
 	}
 
 	for k, v := range variables.MC {
+		fullPuth = endpoint + strings.ToLower(strings.Replace(reflect.TypeOf(variables.MC[k]).String(), "variables.", "", -1)) + "/" + k + "/" + strconv.FormatInt(int64(v), 10)
+		//log.Println(fullPuth)
+		sendRequest(fullPuth, client)
 
-		sendRequest(fmt.Sprintf("%scounter/%s/%d", url, k, v), client)
-
-		variables.MC["PollCount"] = 0 // обнуляем?
+		variables.MC["PollCount"] = 0 // обнуляем????
 	}
 
 }
 func main() {
+
+	//fmt.Println("Начало...")
 	st := new(runtime.MemStats)
 
-	//endpoint := "/update/"
+	endpoint := "http://127.0.0.1:8080/update/"
 
 	client := http.Client{}
 
@@ -67,30 +69,16 @@ func main() {
 
 		select {
 		case <-timer10.C:
-
-			if variables.ShowLog {
-				fmt.Println("#update..")
-			}
-
+			//	fmt.Println("обновляем")
 			runtime.ReadMemStats(st)
 			updater.UpdateMetrics(st)
 
 			timer10 = time.NewTimer(reportInterval * time.Second)
-
-			if variables.ShowLog {
-				fmt.Println("#send..")
-			}
-
-			//getRequest("http://"+variables.IPServer+endpoint, client)
-
-			getRequest("http://127.0.0.1:8080/update/", client)
+			//fmt.Println("отправляем")
+			getRequest(endpoint, client)
 
 		case <-timer.C:
-
-			if variables.ShowLog {
-				fmt.Println("#update..")
-			}
-
+			//fmt.Println("обновляем")
 			runtime.ReadMemStats(st)
 
 			updater.UpdateMetrics(st)
@@ -98,6 +86,7 @@ func main() {
 		case <-osSigChan:
 			os.Exit(1)
 			return
+
 		}
 	}
 
