@@ -51,7 +51,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMetric(mType, mName string) (string, int, error) {
+func getMetric(mType, mName string, format bool) (string, int, error) {
 
 	var answer string
 	var st int
@@ -71,7 +71,15 @@ func getMetric(mType, mName string) (string, int, error) {
 	case "gauge":
 
 		if value, inMap := variables.MG[mName]; inMap {
-			answer = fmt.Sprintf("%.3f", value)
+
+			if format {
+				fmt.Println("getMetric except format")
+				answer = fmt.Sprintf("%0.3f", value)
+			} else {
+				fmt.Println("getMetric with format")
+				answer = fmt.Sprintf("%f", value)
+			}
+
 			st = http.StatusOK
 		} else {
 			err = fmt.Errorf("не найдено имя %s", mName)
@@ -80,17 +88,20 @@ func getMetric(mType, mName string) (string, int, error) {
 		}
 
 	case "counter":
-
 		if value, inMap := variables.MC[mName]; inMap {
-
-			answer = fmt.Sprintf("%d", value)
+			if format {
+				fmt.Println("getMetric except format")
+				answer = fmt.Sprintf("%d", value)
+			} else {
+				fmt.Println("getMetric with format")
+				answer = fmt.Sprintf("", value)
+			}
 			st = http.StatusOK
 		} else {
 			err = fmt.Errorf("не найдено имя %s", mName)
 			st = http.StatusNotFound //404
 			answer = ""
 		}
-
 	default:
 
 		st = http.StatusBadRequest
@@ -103,11 +114,14 @@ func getMetric(mType, mName string) (string, int, error) {
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("star HandleGetMetric...")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 
-	val, code, err := getMetric(mType, mName)
+	fmt.Println("type metric: ", mType, " name metric: ", mName)
+
+	val, code, err := getMetric(mType, mName, true)
 
 	if err != nil {
 		http.Error(w, err.Error(), code)
@@ -123,6 +137,9 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("star HandleGetMetric Json...")
+
 	var resp variables.Metrics
 
 	body, err := io.ReadAll(r.Body)
@@ -140,7 +157,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("type metric: ", mType, " name metric: ", mName)
 
-	val, code, err := getMetric(mType, mName)
+	val, code, err := getMetric(mType, mName, false)
 
 	if err != nil {
 		http.Error(w, err.Error(), code)
@@ -178,7 +195,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetrics")
+	fmt.Println("HandleUpdateMetrics old")
 	//var a = strings.Split(r.URL.String(), "/")
 
 	mType := chi.URLParam(r, "mType")
@@ -202,7 +219,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 	case "gauge":
 		val, err := strconv.ParseFloat(mVal, 64)
-
+		fmt.Println(val)
 		if err != nil {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
@@ -229,8 +246,8 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("HandleUpdateMetrics JSON")
 
-	fmt.Println("HandleUpdateMetricsJson")
 	//var a = strings.Split(r.URL.String(), "/")
 	var resp variables.Metrics
 
@@ -248,13 +265,7 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 	mType := resp.MType
 	mName := resp.ID
 
-	//if variables.ShowLog {
-	//	fmt.Println("HandleUpdateMetrics")
-	//	fmt.Println("mType", mType)
-	//	fmt.Println("mName", mName)
-	//	fmt.Println("mVal", mVal)
-	//	fmt.Println(mName == "", mVal == "", (mType != "gauge" && mType != "counter"))
-	//}
+	fmt.Println("type metric: ", mType, " name metric: ", mName)
 
 	if mName == "" || (mType != "gauge" && mType != "counter") {
 		sendStatus(w, http.StatusNotImplemented) // 501
@@ -266,26 +277,20 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 	case "gauge":
 		val := *resp.Value
 
-		//	val, err := strconv.ParseFloat(mVal, 64)
-
 		if err != nil {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
 		variables.MG[mName] = variables.Gauge(val)
+		fmt.Println("обновили метрику Gauge - %v в значение: v%", mName, val)
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
+		fmt.Println(*resp.Delta)
 		val := *resp.Delta
 
-		//val, err := strconv.Atoi(mVal)
-
-		//if err != nil {
-		//	sendStatus(w, http.StatusBadRequest) // 400
-		//	return
-		//}
-
 		variables.MC[mName] += variables.Counter(val)
+		fmt.Printf("обновили метрику counter %v в значение: %v", mName, val)
 		sendStatus(w, http.StatusOK)
 
 	default:

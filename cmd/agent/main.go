@@ -70,7 +70,7 @@ func getRequest(URL string, client http.Client) {
 		v_int := int64(v)
 		str := variables.Metrics{
 			ID:    k,
-			MType: "gauge",
+			MType: "counter",
 			Delta: &v_int,
 		}
 
