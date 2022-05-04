@@ -29,6 +29,8 @@ func main() {
 	})
 
 	r.Post("/update/{mType}/{mName}/{mValue}", handlers.HandleUpdateMetrics)
+	r.Post("/update", handlers.HandleUpdateMetricsJson)
+	r.Post("/value", handlers.HandleGetMetricJson)
 
 	http.ListenAndServe(variables.IPServer, r)
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,21 +21,33 @@ import (
 const pollInterval = 2
 const reportInterval = 10
 
-func sendRequest(fullPuth string, client http.Client) {
+func sendUpdateRequestJson(fullPuth string, client http.Client, userData variables.Metrics) {
 
-	if variables.ShowLog {
-		fmt.Println(fullPuth)
+	strJSON, err := json.MarshalIndent(userData, "", "	")
+
+	if err != nil {
+		fmt.Errorf("marsalling failed: %v", err)
 	}
 
-	data := url.Values{}
-	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
-	req.Header.Add("Content-Type", "text/plain")
-	_, err := client.Do(req)
+	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
 	if err != nil {
 		log.Print("Sending failed", err)
 		os.Exit(1)
+	}
 
+}
+
+func sendUpdateRequest(fullPuth string, client http.Client) {
+
+	data := url.Values{}
+
+	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "text/plain")
+	_, err := client.Do(req)
+	if err != nil {
+		log.Print("Sending failed", err)
+		os.Exit(1)
 	}
 
 }
@@ -42,13 +56,26 @@ func getRequest(URL string, client http.Client) {
 
 	for k, v := range variables.MG {
 
-		sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
+		v_fl := float64(v)
+		str := variables.Metrics{
+			ID:    k,
+			MType: "gauge",
+			Value: &v_fl,
+		}
+		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
+		sendUpdateRequestJson(URL, client, str)
 	}
 
 	for k, v := range variables.MC {
+		v_int := int64(v)
+		str := variables.Metrics{
+			ID:    k,
+			MType: "gauge",
+			Delta: &v_int,
+		}
 
-		sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
-
+		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
+		sendUpdateRequestJson(URL, client, str)
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
 

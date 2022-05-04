@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -120,8 +122,63 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
+func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
+	var resp variables.Metrics
 
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println(w, "can't unmarshal: ", err.Error())
+	}
+
+	mType := resp.MType
+	mName := resp.ID
+
+	fmt.Println("type metric: ", mType, " name metric: ", mName)
+
+	val, code, err := getMetric(mType, mName)
+
+	if err != nil {
+		http.Error(w, err.Error(), code)
+		return
+	}
+	switch mType {
+	case "gauge":
+		val_fl, err := strconv.ParseFloat(val, 64)
+
+		if err != nil {
+			panic(err)
+		}
+		resp.Value = &val_fl
+	case "counter":
+		val_int, err := strconv.ParseInt(val, 10, 1)
+
+		if err != nil {
+			panic(err)
+		}
+		resp.Delta = &val_int
+	}
+
+	strJSON, err := json.MarshalIndent(resp, "", "	")
+
+	fmt.Println(string(strJSON))
+
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err = w.Write(strJSON)
+
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("HandleUpdateMetrics")
 	//var a = strings.Split(r.URL.String(), "/")
 
 	mType := chi.URLParam(r, "mType")
@@ -161,6 +218,72 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
+
+		variables.MC[mName] += variables.Counter(val)
+		sendStatus(w, http.StatusOK)
+
+	default:
+		sendStatus(w, http.StatusNotImplemented) // 501
+	}
+
+}
+
+func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("HandleUpdateMetricsJson")
+	//var a = strings.Split(r.URL.String(), "/")
+	var resp variables.Metrics
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(body, &resp)
+
+	if err != nil {
+		fmt.Println(w, "can't unmarshal: ", err.Error())
+	}
+
+	mType := resp.MType
+	mName := resp.ID
+
+	//if variables.ShowLog {
+	//	fmt.Println("HandleUpdateMetrics")
+	//	fmt.Println("mType", mType)
+	//	fmt.Println("mName", mName)
+	//	fmt.Println("mVal", mVal)
+	//	fmt.Println(mName == "", mVal == "", (mType != "gauge" && mType != "counter"))
+	//}
+
+	if mName == "" || (mType != "gauge" && mType != "counter") {
+		sendStatus(w, http.StatusNotImplemented) // 501
+		return
+	}
+
+	switch strings.ToLower(mType) {
+
+	case "gauge":
+		val := *resp.Value
+
+		//	val, err := strconv.ParseFloat(mVal, 64)
+
+		if err != nil {
+			sendStatus(w, http.StatusBadRequest) // 400
+			return
+		}
+		variables.MG[mName] = variables.Gauge(val)
+		sendStatus(w, http.StatusOK)
+
+	case "counter":
+		val := *resp.Delta
+
+		//val, err := strconv.Atoi(mVal)
+
+		//if err != nil {
+		//	sendStatus(w, http.StatusBadRequest) // 400
+		//	return
+		//}
 
 		variables.MC[mName] += variables.Counter(val)
 		sendStatus(w, http.StatusOK)
