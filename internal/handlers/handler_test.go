@@ -60,18 +60,4 @@ func TestHandleUpdateMetrics(t *testing.T) {
 		})
 	}
 
-	//for _, tt := range tests {
-	//	t.Run(tt.name, func(t *testing.T) {
-	//
-	//		request := httptest.NewRequest(http.MethodPost, tt.request, nil)
-	//		w := httptest.NewRecorder()
-	//		h := http.HandlerFunc(HandleUpdateMetrics)
-	//		h.ServeHTTP(w, request)
-	//		result := w.Result()
-	//
-	//		assert.Equal(t, result.StatusCode, tt.want.code)
-	//		assert.Contains(t, tt.want.contentType, result.Header.Get("Content-Type"))
-	//
-	//	})
-	//}
 }

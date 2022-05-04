@@ -73,10 +73,11 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		if value, inMap := variables.MG[mName]; inMap {
 
 			if format {
-				fmt.Println("getMetric except format")
+				fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%0.3f", value)
 			} else {
-				fmt.Println("getMetric with format")
+				fmt.Println("getMetric except format")
+
 				answer = fmt.Sprintf("%f", value)
 			}
 
@@ -90,11 +91,11 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	case "counter":
 		if value, inMap := variables.MC[mName]; inMap {
 			if format {
-				fmt.Println("getMetric except format")
+				fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%d", value)
 			} else {
-				fmt.Println("getMetric with format")
-				answer = fmt.Sprintf("", value)
+				fmt.Println("getMetric except format")
+				answer = fmt.Sprintf("%d", value)
 			}
 			st = http.StatusOK
 		} else {
@@ -203,7 +204,6 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 	mVal := chi.URLParam(r, "mValue")
 
 	if variables.ShowLog {
-		fmt.Println("HandleUpdateMetrics")
 		fmt.Println("mType", mType)
 		fmt.Println("mName", mName)
 		fmt.Println("mVal", mVal)
@@ -246,7 +246,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetrics JSON")
+	fmt.Println("HandleUpdateMetricsJSON")
 
 	//var a = strings.Split(r.URL.String(), "/")
 	var resp variables.Metrics
@@ -282,7 +282,6 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		variables.MG[mName] = variables.Gauge(val)
-		fmt.Println("обновили метрику Gauge - %v в значение: v%", mName, val)
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
@@ -290,7 +289,6 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 		val := *resp.Delta
 
 		variables.MC[mName] += variables.Counter(val)
-		fmt.Printf("обновили метрику counter %v в значение: %v", mName, val)
 		sendStatus(w, http.StatusOK)
 
 	default:
