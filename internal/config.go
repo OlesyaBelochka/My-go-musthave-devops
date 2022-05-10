@@ -16,12 +16,13 @@ type Config struct {
 
 // New returns a new Config struct
 func New() *Config {
+
 	return &Config{
 		Address:        getEnv("ADDRESS", "127.0.0.1:8080"),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", 1),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 1),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
 		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-		StoreFile:      getEnv("REPORT_INTERVAL", "/tmp/1.json"),
+		StoreFile:      getEnv("REPORT_INTERVAL", "/tmp/devops-metrics-db.json"),
 		Restore:        getEnvAsBool("RESTORE", true),
 	}
 }

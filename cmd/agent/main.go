@@ -102,14 +102,12 @@ func main() {
 
 	client := http.Client{}
 
-	//timer10 := time.NewTimer(reportInterval * time.Second)
 	timer10 := time.NewTimer(time.Duration(conf.ReportInterval) * time.Second)
 
 	for {
 		osSigChan := make(chan os.Signal)
 		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-		//timer := time.NewTimer(pollInterval * time.Second)
 		timer := time.NewTimer(time.Duration(conf.PollInterval) * time.Second)
 
 		select {
@@ -122,11 +120,10 @@ func main() {
 			runtime.ReadMemStats(st)
 			updater.UpdateAllMetrics(st)
 
-			//timer10 = time.NewTimer(reportInterval * time.Second)
 			timer10 = time.NewTimer(time.Duration(conf.ReportInterval) * time.Second)
 
 			if variables.ShowLog {
-				fmt.Println("#send..")
+				fmt.Println("#send to ", conf.Address+endpoint)
 			}
 
 			getRequest("http://"+conf.Address+endpoint, client)

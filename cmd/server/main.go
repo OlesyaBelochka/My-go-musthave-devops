@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
@@ -19,7 +18,6 @@ func init() {
 
 	if variables.Conf.Restore {
 
-		//defer os.Remove(conf.StoreFile)
 		readerM, err := variables.NewReader(variables.Conf.StoreFile)
 		if err != nil {
 			log.Fatal(err)
@@ -34,18 +32,18 @@ func init() {
 				break // выходим из цикла
 			}
 
-			fmt.Println(readedData)
+			//fmt.Println(readedData)
 
 			switch readedData.MType {
 
 			case "gauge":
-				//log.Printf("обновляем метрику %v из файла  в значение %v", readedData.ID, *readedData.Value)
 
 				updater.UpdateGaugeMetric(readedData.ID, variables.Gauge(*readedData.Value))
 
 			case "counter":
-				//log.Printf("обновляем метрику %v из файла  в значение %v", readedData.ID, *readedData.Delta)
+
 				updater.UpdateCountMetric(readedData.ID, variables.Counter(*readedData.Delta))
+
 			}
 		}
 	}
@@ -59,9 +57,9 @@ func main() {
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	if variables.ShowLog {
-		r.Use(middleware.Logger)
-	}
+	//if variables.ShowLog {
+	//	r.Use(middleware.Logger)
+	//}
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 

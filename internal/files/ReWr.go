@@ -10,7 +10,7 @@ import (
 )
 
 func saveMetricsIntoFile() {
-	log.Println("новый врайтер")
+	log.Println("сохраняем метки в файл")
 	new_writer, err := variables.NewWriter(variables.Conf.StoreFile)
 
 	if err != nil {
@@ -20,14 +20,15 @@ func saveMetricsIntoFile() {
 	defer new_writer.Close()
 
 	for k, v := range variables.MG {
-		log.Println("в цикле заполняем структуру")
+
 		v_fl := float64(v)
 		str := variables.Metrics{
 			ID:    k,
 			MType: "gauge",
 			Value: &v_fl,
 		}
-		log.Println("вот эти данные будем писать", str)
+
+		log.Printf("id : %s, type:%s, value:%v", k, "gauge", v_fl)
 		if err := new_writer.WriteData(&str); err != nil {
 			log.Fatal(err)
 		}
@@ -42,7 +43,7 @@ func saveMetricsIntoFile() {
 			MType: "counter",
 			Delta: &v_int,
 		}
-		log.Println("вот эти данные будем писать", str)
+		log.Printf("id : %s, type:%s, value:%v", k, "counter", v_int)
 		if err := new_writer.WriteData(&str); err != nil {
 			log.Fatal(err)
 		}

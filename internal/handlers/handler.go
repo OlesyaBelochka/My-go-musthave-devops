@@ -58,10 +58,10 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	var st int
 	var err error
 
-	if variables.ShowLog {
-		fmt.Println(mName)
-		fmt.Println(mType)
-	}
+	//if variables.ShowLog {
+	//	fmt.Println(mName)
+	//	fmt.Println(mType)
+	//}
 
 	if mName == "" || mType == "" {
 		st = http.StatusBadRequest
@@ -74,10 +74,10 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		if value, inMap := variables.MG[mName]; inMap {
 
 			if format {
-				fmt.Println("getMetric with format")
+				//fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%0.3f", value)
 			} else {
-				fmt.Println("getMetric except format")
+				//fmt.Println("getMetric except format")
 
 				answer = fmt.Sprintf("%f", value)
 			}
@@ -92,10 +92,10 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	case "counter":
 		if value, inMap := variables.MC[mName]; inMap {
 			if format {
-				fmt.Println("getMetric with format")
+				//fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%d", value)
 			} else {
-				fmt.Println("getMetric except format")
+				//fmt.Println("getMetric except format")
 				answer = fmt.Sprintf("%d", value)
 			}
 			st = http.StatusOK
@@ -110,18 +110,18 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	}
 
 	if variables.ShowLog {
-		fmt.Println(answer, st, err)
+		fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
 	}
 	return answer, st, err
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("star HandleGetMetric...")
+	fmt.Println("star HandleGetMetric old")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 
-	fmt.Println("type metric: ", mType, " name metric: ", mName)
+	//fmt.Println("type metric: ", mType, " name metric: ", mName)
 
 	val, code, err := getMetric(mType, mName, true)
 
@@ -129,7 +129,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), code)
 		return
 	}
-
+	fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val, " в HandleGetMetric old")
 	_, err = w.Write([]byte(val))
 
 	if err != nil {
@@ -140,7 +140,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Println("star HandleGetMetric Json...")
+	fmt.Println("star HandleGetMetric Json")
 
 	var resp variables.Metrics
 
@@ -157,8 +157,6 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 	mType := resp.MType
 	mName := resp.ID
 
-	fmt.Println("type metric: ", mType, " name metric: ", mName)
-
 	val, code, err := getMetric(mType, mName, false)
 
 	if err != nil {
@@ -166,6 +164,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch mType {
+
 	case "gauge":
 		val_fl, err := strconv.ParseFloat(val, 64)
 
@@ -173,6 +172,11 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		resp.Value = &val_fl
+
+		if variables.ShowLog {
+			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val_fl, " в HandleGetMetric Json")
+		}
+
 	case "counter":
 		val_int, err := strconv.ParseInt(val, 10, 64)
 
@@ -180,11 +184,18 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		resp.Delta = &val_int
+
+		if variables.ShowLog {
+			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val_int, " в HandleGetMetric Json")
+		}
+		//default:
+		//	st := http.StatusBadRequest
+
 	}
 
 	strJSON, err := json.MarshalIndent(resp, "", "	")
 
-	fmt.Println(string(strJSON))
+	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -225,7 +236,9 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
+
 		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
+
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
@@ -238,6 +251,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 
 		updater.UpdateCountMetric(mName, variables.Counter(val))
+
 		sendStatus(w, http.StatusOK)
 
 	default:
@@ -282,12 +296,14 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
+
 		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
 		fmt.Println(*resp.Delta)
 		val := *resp.Delta
+
 		updater.UpdateCountMetric(mName, variables.Counter(val))
 		sendStatus(w, http.StatusOK)
 
