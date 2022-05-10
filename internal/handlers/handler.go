@@ -217,7 +217,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 	if variables.ShowLog {
 		fmt.Println("получен URL ", r.URL)
-		fmt.Printf("распознали: mType=", mType, " mName=", mName, " mVal =", mVal)
+		fmt.Printf("распознали: mType=%s, mName=%s, mVal = %s", mType, mName, mVal)
 	}
 
 	if mName == "" || mVal == "" || (mType != "gauge" && mType != "counter") {
