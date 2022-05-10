@@ -216,10 +216,8 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 	mVal := chi.URLParam(r, "mValue")
 
 	if variables.ShowLog {
-		fmt.Println("mType", mType)
-		fmt.Println("mName", mName)
-		fmt.Println("mVal", mVal)
-		fmt.Println(mName == "", mVal == "", (mType != "gauge" && mType != "counter"))
+		fmt.Println("получен URL ", r.URL)
+		fmt.Printf("распознали: mType=", mType, " mName=", mName, " mVal =", mVal)
 	}
 
 	if mName == "" || mVal == "" || (mType != "gauge" && mType != "counter") {
