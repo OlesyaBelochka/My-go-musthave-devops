@@ -20,9 +20,6 @@ import (
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
 
-const pollInterval = 2
-const reportInterval = 10
-
 func init() {
 	// loads values from .env into the system
 	if err := godotenv.Load(); err != nil {
@@ -72,6 +69,9 @@ func getRequest(URL string, client http.Client) {
 			Value: &v_fl,
 		}
 		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
+		if variables.ShowLog {
+			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, v_fl)
+		}
 		sendUpdateRequestJson(URL, client, &str)
 	}
 
@@ -84,12 +84,18 @@ func getRequest(URL string, client http.Client) {
 		}
 
 		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
+
+		if variables.ShowLog {
+			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, v_int)
+		}
+
 		sendUpdateRequestJson(URL, client, &str)
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
 
 }
 func main() {
+	log.Println("Клиент запустился, обновляет и отправляет")
 	conf := config.New()
 
 	if variables.ShowLog {

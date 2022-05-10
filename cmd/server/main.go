@@ -51,6 +51,7 @@ func init() {
 
 func main() {
 
+	log.Println("Сервер запустился и слушает")
 	r := chi.NewRouter()
 
 	go files.Start()
