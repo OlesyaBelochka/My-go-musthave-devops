@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
 	"io"
 	"log"
 	"net/http"
@@ -173,7 +174,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.Value = &val_fl
 	case "counter":
-		val_int, err := strconv.ParseInt(val, 10, 1)
+		val_int, err := strconv.ParseInt(val, 10, 64)
 
 		if err != nil {
 			panic(err)
@@ -224,7 +225,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
-		variables.MG[mName] = variables.Gauge(val)
+		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
@@ -236,7 +237,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		variables.MC[mName] += variables.Counter(val)
+		updater.UpdateCountMetric(mName, variables.Counter(val))
 		sendStatus(w, http.StatusOK)
 
 	default:
@@ -281,14 +282,13 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
 		}
-		variables.MG[mName] = variables.Gauge(val)
+		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
 		sendStatus(w, http.StatusOK)
 
 	case "counter":
 		fmt.Println(*resp.Delta)
 		val := *resp.Delta
-
-		variables.MC[mName] += variables.Counter(val)
+		updater.UpdateCountMetric(mName, variables.Counter(val))
 		sendStatus(w, http.StatusOK)
 
 	default:

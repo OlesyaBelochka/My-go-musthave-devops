@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"net/url"
@@ -21,7 +23,14 @@ import (
 const pollInterval = 2
 const reportInterval = 10
 
-func sendUpdateRequestJson(fullPuth string, client http.Client, userData variables.Metrics) {
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+}
+
+func sendUpdateRequestJson(fullPuth string, client http.Client, userData *variables.Metrics) {
 
 	strJSON, err := json.MarshalIndent(userData, "", "	")
 
@@ -63,7 +72,7 @@ func getRequest(URL string, client http.Client) {
 			Value: &v_fl,
 		}
 		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
-		sendUpdateRequestJson(URL, client, str)
+		sendUpdateRequestJson(URL, client, &str)
 	}
 
 	for k, v := range variables.MC {
@@ -75,24 +84,33 @@ func getRequest(URL string, client http.Client) {
 		}
 
 		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
-		sendUpdateRequestJson(URL, client, str)
+		sendUpdateRequestJson(URL, client, &str)
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
 
 }
 func main() {
+	conf := config.New()
+
+	if variables.ShowLog {
+		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", conf.Address, conf.ReportInterval, conf.PollInterval)
+	}
+
 	st := new(runtime.MemStats)
 
 	endpoint := "/update/"
 
 	client := http.Client{}
 
-	timer10 := time.NewTimer(reportInterval * time.Second)
+	//timer10 := time.NewTimer(reportInterval * time.Second)
+	timer10 := time.NewTimer(time.Duration(conf.ReportInterval) * time.Second)
 
 	for {
 		osSigChan := make(chan os.Signal)
 		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-		timer := time.NewTimer(pollInterval * time.Second)
+
+		//timer := time.NewTimer(pollInterval * time.Second)
+		timer := time.NewTimer(time.Duration(conf.PollInterval) * time.Second)
 
 		select {
 		case <-timer10.C:
@@ -102,15 +120,16 @@ func main() {
 			}
 
 			runtime.ReadMemStats(st)
-			updater.UpdateMetrics(st)
+			updater.UpdateAllMetrics(st)
 
-			timer10 = time.NewTimer(reportInterval * time.Second)
+			//timer10 = time.NewTimer(reportInterval * time.Second)
+			timer10 = time.NewTimer(time.Duration(conf.ReportInterval) * time.Second)
 
 			if variables.ShowLog {
 				fmt.Println("#send..")
 			}
 
-			getRequest("http://"+variables.IPServer+endpoint, client)
+			getRequest("http://"+conf.Address+endpoint, client)
 
 		case <-timer.C:
 
@@ -120,7 +139,7 @@ func main() {
 
 			runtime.ReadMemStats(st)
 
-			updater.UpdateMetrics(st)
+			updater.UpdateAllMetrics(st)
 
 		case <-osSigChan:
 			os.Exit(1)
