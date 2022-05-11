@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func sendUpdateRequestJson(fullPuth string, client http.Client, userData *variables.Metrics) {
+func sendUpdateRequestJson(fullPuth string, client http.Client, userData variables.Metrics) {
 
 	strJSON, err := json.Marshal(userData)
 
