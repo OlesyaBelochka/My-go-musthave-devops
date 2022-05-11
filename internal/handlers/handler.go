@@ -193,7 +193,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	strJSON, err := json.MarshalIndent(resp, "", "	")
+	strJSON, err := json.Marshal(resp)
 
 	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
@@ -308,5 +308,13 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 	default:
 		sendStatus(w, http.StatusNotImplemented) // 501
 	}
+
+	strJSON, err := json.Marshal(variables.Metrics{})
+
+	fmt.Println("ответ в файле JSON: " + string(strJSON))
+
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err = w.Write(strJSON)
 
 }
