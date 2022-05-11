@@ -43,11 +43,10 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData variabl
 	if err != nil {
 		//http.Error()
 		//log.Print("Sending failed", err)
-		//os.Exit(1)
-
 		fmt.Errorf("post request failed: %v", err)
-	} else {
+		os.Exit(1)
 
+	} else {
 		fmt.Println(req)
 		defer req.Body.Close()
 	}
