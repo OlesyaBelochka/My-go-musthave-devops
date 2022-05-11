@@ -29,7 +29,7 @@ func init() {
 
 func sendUpdateRequestJson(fullPuth string, client http.Client, userData *variables.Metrics) {
 
-	strJSON, err := json.MarshalIndent(*userData, "", "	")
+	strJSON, err := json.Marshal(userData)
 
 	if err != nil {
 		fmt.Errorf("marsalling failed: %v", err)
