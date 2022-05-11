@@ -31,21 +31,27 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData variabl
 
 	strJSON, err := json.Marshal(userData)
 
+	fmt.Println(string(strJSON))
+
 	if err != nil {
 		fmt.Errorf("marsalling failed: %v", err)
 	}
 
 	req, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
-	defer req.Body.Close()
+	//
 	if err != nil {
 		//http.Error()
 		//log.Print("Sending failed", err)
 		//os.Exit(1)
 
 		fmt.Errorf("post request failed: %v", err)
+	} else {
+
+		fmt.Println(req)
+		defer req.Body.Close()
 	}
-	fmt.Println(req)
+
 }
 
 func sendUpdateRequest(fullPuth string, client http.Client) {
@@ -76,7 +82,7 @@ func getRequest(URL string, client http.Client) {
 		if variables.ShowLog {
 			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, v_fl)
 		}
-		sendUpdateRequestJson(URL, client, &str)
+		sendUpdateRequestJson(URL, client, str)
 	}
 
 	for k, v := range variables.MC {
@@ -93,7 +99,7 @@ func getRequest(URL string, client http.Client) {
 			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, v_int)
 		}
 
-		sendUpdateRequestJson(URL, client, &str)
+		sendUpdateRequestJson(URL, client, str)
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
 
