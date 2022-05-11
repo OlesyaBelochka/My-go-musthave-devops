@@ -35,8 +35,9 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData *variab
 		fmt.Errorf("marsalling failed: %v", err)
 	}
 
-	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
+	req, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
+	defer req.Body.Close()
 	if err != nil {
 		//http.Error()
 		//log.Print("Sending failed", err)
@@ -44,7 +45,7 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData *variab
 
 		fmt.Errorf("post request failed: %v", err)
 	}
-
+	fmt.Println(req)
 }
 
 func sendUpdateRequest(fullPuth string, client http.Client) {
