@@ -27,12 +27,12 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData variabl
 
 	if err != nil {
 		fmt.Errorf("post request failed: %v", err)
-
+		return
 	} else {
 		fmt.Println(resp)
 		defer resp.Body.Close()
 	}
-
+	return
 	//if resp.StatusCode != 200 {
 	//	_, err := io.ReadAll(resp.Body)
 	//	if err != nil {
