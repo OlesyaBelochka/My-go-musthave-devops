@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -21,17 +20,24 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData variabl
 
 	if err != nil {
 		fmt.Errorf("marsalling failed: %v", err)
+		return
 	}
 
-	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
+	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
-	if resp.StatusCode != 200 {
-		_, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Errorf(err.Error())
-		}
-		defer resp.Body.Close()
+	if err != nil {
+		fmt.Errorf(err.Error())
+		return
 	}
+	//if resp.StatusCode != 200 {
+	//	_, err := io.ReadAll(resp.Body)
+	//	if err != nil {
+	//		fmt.Errorf(err.Error())
+	//		return
+	//	}
+	//	defer resp.Body.Close()
+	//	//
+	//}
 
 }
 
