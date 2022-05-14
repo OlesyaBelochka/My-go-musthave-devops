@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	f_rstor            bool
-	f_addr, f_str_file string
-	f_str_interv       int64
+	fRstor          bool
+	fAddr, fStrFile string
+	fStrInterv      int64
 )
 
 func init() {
@@ -34,30 +34,30 @@ func init() {
 	//
 	//variables.Conf = config.New()
 	//
-	//flag.BoolVar(&f_rstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&f_addr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&f_str_file, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&f_str_interv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fStrFile, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.Int64Var(&fStrInterv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 	////fmt.Println("Restore = ", variables.Conf.Restore)
 	////RESTORE=true
 }
 func setFlags() {
 
 	flag.Parse()
-	if !f_rstor {
-		variables.Conf.Restore = f_rstor
+	if !fRstor {
+		variables.Conf.Restore = fRstor
 	}
 
-	if f_addr != "" {
-		variables.Conf.Address = f_addr
+	if fAddr != "" {
+		variables.Conf.Address = fAddr
 	}
 
-	if f_str_file != "" {
-		variables.Conf.StoreFile = f_str_file
+	if fStrFile != "" {
+		variables.Conf.StoreFile = fStrFile
 	}
 
-	if f_str_interv != 0 {
-		variables.Conf.StoreInterval = f_str_interv
+	if fStrInterv != 0 {
+		variables.Conf.StoreInterval = fStrInterv
 	}
 }
 

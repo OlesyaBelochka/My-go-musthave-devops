@@ -14,7 +14,7 @@ import (
 
 func saveMetricsIntoFile() {
 
-	new_writer, err := variables.NewWriter(variables.Conf.StoreFile)
+	newWriter, err := variables.NewWriter(variables.Conf.StoreFile)
 
 	if err != nil {
 		log.Println("can't open file, error: ", err)
@@ -22,19 +22,19 @@ func saveMetricsIntoFile() {
 
 	}
 
-	defer new_writer.Close()
+	defer newWriter.Close()
 
 	for k, v := range variables.MG {
 
-		v_fl := float64(v)
+		vFl := float64(v)
 		str := variables.Metrics{
 			ID:    k,
 			MType: "gauge",
-			Value: &v_fl,
+			Value: &vFl,
 		}
 
-		log.Printf("id : %s, type:%s, value:%v", k, "gauge", v_fl)
-		if err := new_writer.WriteData(&str); err != nil {
+		log.Printf("id : %s, type:%s, value:%v", k, "gauge", vFl)
+		if err := newWriter.WriteData(&str); err != nil {
 			log.Println("mistake while writening file gauge metrics ", err)
 		}
 
@@ -42,14 +42,14 @@ func saveMetricsIntoFile() {
 
 	for k, v := range variables.MC {
 
-		v_int := int64(v)
+		vInt := int64(v)
 		str := variables.Metrics{
 			ID:    k,
 			MType: "counter",
-			Delta: &v_int,
+			Delta: &vInt,
 		}
-		log.Printf("id : %s, type:%s, value:%v", k, "counter", v_int)
-		if err := new_writer.WriteData(&str); err != nil {
+		log.Printf("id : %s, type:%s, value:%v", k, "counter", vInt)
+		if err := newWriter.WriteData(&str); err != nil {
 
 			log.Println("mistake while writening file counter metrics ", err)
 		}

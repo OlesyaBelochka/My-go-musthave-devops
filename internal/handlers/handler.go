@@ -48,7 +48,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte(html))
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
 
@@ -133,7 +133,8 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write([]byte(val))
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+
 	}
 
 }
@@ -145,13 +146,16 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 	var resp variables.Metrics
 
 	body, err := io.ReadAll(r.Body)
+
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
 		fmt.Println(w, "can't unmarshal: ", err.Error())
+		return
 	}
 
 	mType := resp.MType
@@ -169,7 +173,8 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 		val_fl, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		resp.Value = &val_fl
 
@@ -181,7 +186,8 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 		val_int, err := strconv.ParseInt(val, 10, 64)
 
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		resp.Delta = &val_int
 
@@ -194,6 +200,10 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	strJSON, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
@@ -202,7 +212,7 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(strJSON)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 }
@@ -266,7 +276,8 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	err = json.Unmarshal(body, &resp)
@@ -310,6 +321,11 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	strJSON, err := json.Marshal(variables.Metrics{})
+
+	if err != nil {
+		fmt.Println("error : ", err)
+		return
+	}
 
 	fmt.Println("ответ в файле JSON: " + string(strJSON))
 

@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	f_addr                  string
-	f_rp_interv, f_p_interv int64
+	fАddr               string
+	fRpInterv, fPInterv int64
 )
 
 func init() {
@@ -25,24 +25,24 @@ func init() {
 	//	log.Print("No .env file found")
 	//}
 	//
-	//flag.StringVar(&f_addr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&f_rp_interv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&f_p_interv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
 
 }
 
 //func setFlags() {
 //	flag.Parse()
 //
-//	if f_addr != "" {
+//	if fАddr != "" {
 //		variables.Conf.Address = f_addr
 //	}
 //
-//	if f_rp_interv != 0 {
+//	if fRpInterv != 0 {
 //		variables.Conf.ReportInterval = f_rp_interv
 //	}
 //
-//	if f_p_interv != 0 {
+//	if fPInterv != 0 {
 //		variables.Conf.PollInterval = f_p_interv
 //	}
 //}
