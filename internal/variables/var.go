@@ -2,6 +2,7 @@ package variables
 
 import (
 	"encoding/json"
+	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"os"
 	"runtime"
@@ -82,4 +83,12 @@ func (r *readerM) ReadData() (*Metrics, error) {
 
 func (r *readerM) Close() error {
 	return r.file.Close()
+}
+
+func PrinterErr(err error) {
+	if err != nil {
+		fmt.Println("error : ", err)
+		return
+	}
+
 }

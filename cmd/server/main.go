@@ -89,8 +89,8 @@ func main() {
 	})
 
 	r.Post("/update/{mType}/{mName}/{mValue}", handlers.HandleUpdateMetrics)
-	r.Post("/update", handlers.HandleUpdateMetricsJson)
-	r.Post("/value", handlers.HandleGetMetricJson)
+	r.Post("/update", handlers.HandleUpdateMetricsJSON)
+	r.Post("/value", handlers.HandleGetMetricJSON)
 
 	//if variables.Conf.Address != "" {
 	//http.ListenAndServe(variables.Conf.Address, r)

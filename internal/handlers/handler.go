@@ -139,7 +139,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
+func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("star HandleGetMetric Json")
 
@@ -170,29 +170,29 @@ func HandleGetMetricJson(w http.ResponseWriter, r *http.Request) {
 	switch mType {
 
 	case "gauge":
-		val_fl, err := strconv.ParseFloat(val, 64)
+		valFl, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		resp.Value = &val_fl
+		resp.Value = &valFl
 
 		if variables.ShowLog {
-			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val_fl, " в HandleGetMetric Json")
+			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valFl, " в HandleGetMetric Json")
 		}
 
 	case "counter":
-		val_int, err := strconv.ParseInt(val, 10, 64)
+		valInt, err := strconv.ParseInt(val, 10, 64)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		resp.Delta = &val_int
+		resp.Delta = &valInt
 
 		if variables.ShowLog {
-			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val_int, " в HandleGetMetric Json")
+			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valInt, " в HandleGetMetric Json")
 		}
 		//default:
 		//	st := http.StatusBadRequest
@@ -268,7 +268,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
+func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("HandleUpdateMetricsJSON")
 
 	//var a = strings.Split(r.URL.String(), "/")
@@ -321,16 +321,13 @@ func HandleUpdateMetricsJson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	strJSON, err := json.Marshal(variables.Metrics{})
-
-	if err != nil {
-		fmt.Println("error : ", err)
-		return
-	}
+	variables.PrinterErr(err)
 
 	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
 
 	_, err = w.Write(strJSON)
+	variables.PrinterErr(err)
 
 }
