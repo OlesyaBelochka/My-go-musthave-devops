@@ -22,7 +22,7 @@ func New() *Config {
 		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
 		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
 		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-		StoreFile:      getEnv("REPORT_INTERVAL", "/tmp/devops-metrics-db.json"),
+		StoreFile:      getEnv("STORE_FILE", "/tmp/devops-metrics-db.json"),
 		Restore:        getEnvAsBool("RESTORE", true),
 	}
 }

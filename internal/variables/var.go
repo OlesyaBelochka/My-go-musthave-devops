@@ -6,6 +6,12 @@ import (
 	"os"
 )
 
+const (
+	ReportInterval = 10
+	Address        = "127.0.0.1:8080"
+	PollInterval   = 2
+)
+
 type Gauge float64
 type Counter int64
 
