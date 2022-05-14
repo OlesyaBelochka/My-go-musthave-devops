@@ -22,11 +22,16 @@ func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variabl
 
 	}
 
-	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
+	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
 	if err != nil {
 		fmt.Println("post request failed: ", err)
+		return
+	}
+	err = resp.Body.Close()
 
+	if err != nil {
+		fmt.Println(err)
 	}
 
 	//if resp.StatusCode != 200 {
@@ -49,12 +54,13 @@ func sendUpdateRequest(fullPuth string, client http.Client) {
 	req.Header.Add("Content-Type", "text/plain")
 	resp, err := client.Do(req)
 
-	defer resp.Body.Close()
-
 	if err != nil {
-		log.Print("Sending failed", err)
+		fmt.Println("Sending failed", err)
+		return
 		//os.Exit(1)
 	}
+
+	defer resp.Body.Close()
 
 }
 
