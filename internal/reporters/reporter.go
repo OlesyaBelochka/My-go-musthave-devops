@@ -11,31 +11,24 @@ import (
 	"strings"
 )
 
-func sendUpdateRequestJson(fullPuth string, client http.Client, userData variables.Metrics) {
+func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variables.Metrics) {
 
 	strJSON, err := json.Marshal(userData)
 
 	fmt.Println(string(strJSON))
 
 	if err != nil {
-		fmt.Errorf("marsalling failed: %v", err)
+		fmt.Println("marsalling failed: ", err)
 
 	}
 
-	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
-
-	fmt.Printf("resp = %v, err = %v", resp, err)
+	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
 	if err != nil {
-		fmt.Errorf("post request failed: %v", err)
+		fmt.Println("post request failed: ", err)
 
 	}
 
-	if resp != nil {
-		fmt.Println(resp)
-		defer resp.Body.Close()
-	}
-	return
 	//if resp.StatusCode != 200 {
 	//	_, err := io.ReadAll(resp.Body)
 	//	if err != nil {
@@ -54,7 +47,10 @@ func sendUpdateRequest(fullPuth string, client http.Client) {
 
 	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "text/plain")
-	_, err := client.Do(req)
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
+
 	if err != nil {
 		log.Print("Sending failed", err)
 		//os.Exit(1)
@@ -66,35 +62,35 @@ func Report(URL string, client http.Client) {
 
 	for k, v := range variables.MG {
 
-		v_fl := float64(v)
+		vFl := float64(v)
 		str := variables.Metrics{
 			ID:    k,
 			MType: "gauge",
-			Value: &v_fl,
+			Value: &vFl,
 		}
 		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
 		if variables.ShowLog {
-			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, v_fl)
+			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, vFl)
 		}
 
-		sendUpdateRequestJson(URL, client, str)
+		sendUpdateRequestJSON(URL, client, str)
 	}
 
 	for k, v := range variables.MC {
-		v_int := int64(v)
+		vInt := int64(v)
 		str := variables.Metrics{
 			ID:    k,
 			MType: "counter",
-			Delta: &v_int,
+			Delta: &vInt,
 		}
 
 		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
 
 		if variables.ShowLog {
-			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, v_int)
+			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, vInt)
 		}
 
-		sendUpdateRequestJson(URL, client, str)
+		sendUpdateRequestJSON(URL, client, str)
 		variables.MC["PollCount"] = 0 // обнуляем?
 	}
 

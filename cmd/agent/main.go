@@ -64,7 +64,7 @@ func main() {
 	timer10 := time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
 
 	for {
-		osSigChan := make(chan os.Signal)
+		osSigChan := make(chan os.Signal, 4)
 		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
