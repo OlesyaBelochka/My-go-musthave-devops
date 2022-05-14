@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"net/http/httptest"
@@ -57,6 +58,8 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			assert.Equal(t, result.StatusCode, tt.want.code)
 			assert.Contains(t, tt.want.contentType, result.Header.Get("Content-Type"))
 
+			err := result.Body.Close()
+			variables.PrinterErr(err)
 		})
 	}
 
