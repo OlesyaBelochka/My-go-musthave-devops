@@ -65,7 +65,7 @@ func main() {
 
 	for {
 		osSigChan := make(chan os.Signal)
-		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
 
@@ -80,6 +80,7 @@ func main() {
 		case <-timer.C:
 			updater.Pall()
 		case <-osSigChan:
+
 			os.Exit(1)
 			return
 		}
