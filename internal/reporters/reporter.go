@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -20,15 +19,19 @@ func sendUpdateRequestJson(fullPuth string, client http.Client, userData variabl
 
 	if err != nil {
 		fmt.Errorf("marsalling failed: %v", err)
-		return
+
 	}
 
 	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
+	fmt.Printf("resp = %v, err = %v", resp, err)
+
 	if err != nil {
 		fmt.Errorf("post request failed: %v", err)
-		return
-	} else {
+
+	}
+
+	if resp != nil {
 		fmt.Println(resp)
 		defer resp.Body.Close()
 	}
@@ -54,7 +57,7 @@ func sendUpdateRequest(fullPuth string, client http.Client) {
 	_, err := client.Do(req)
 	if err != nil {
 		log.Print("Sending failed", err)
-		os.Exit(1)
+		//os.Exit(1)
 	}
 
 }
