@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"os"
+	"runtime"
 )
 
 const (
@@ -18,6 +19,8 @@ type Counter int64
 const ShowLog = true
 
 var MG = map[string]Gauge{}
+
+var MemSt = new(runtime.MemStats)
 
 var MC = map[string]Counter{}
 

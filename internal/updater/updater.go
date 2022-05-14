@@ -1,12 +1,24 @@
 package updater
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"runtime"
 
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
+
+func Pall() {
+
+	if variables.ShowLog {
+		fmt.Println("#update..")
+	}
+
+	runtime.ReadMemStats(variables.MemSt)
+	UpdateAllMetrics(variables.MemSt)
+
+}
 
 func UpdateAllMetrics(st *runtime.MemStats) {
 
