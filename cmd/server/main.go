@@ -49,18 +49,23 @@ func setFlags() {
 
 	flag.Parse()
 	if !fRstor {
+		fmt.Println("Server set flag Restore", fRstor)
 		variables.Conf.Restore = fRstor
+
 	}
 
 	if fAddr != "" {
+		fmt.Println("Server set flag Addres", fAddr)
 		variables.Conf.Address = fAddr
 	}
 
 	if fStrFile != "" {
+		fmt.Println("Server set flag StoreFile", fStrFile)
 		variables.Conf.StoreFile = fStrFile
 	}
 
 	if fStrInterv != 0 {
+		fmt.Println("Server set flag StoreInterval", fStrInterv)
 		variables.Conf.StoreInterval = fStrInterv
 	}
 }

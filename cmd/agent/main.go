@@ -26,8 +26,8 @@ func init() {
 	//}
 	//
 	flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fRpInterv, "r", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fPInterv, "p", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
 
 }
 
@@ -35,14 +35,17 @@ func setFlags() {
 	flag.Parse()
 
 	if fАddr != "" {
+		fmt.Println("Server set flag Addres", fАddr)
 		variables.Conf.Address = fАddr
 	}
 
 	if fRpInterv != 0 {
+		fmt.Println("Server set flag ReportInterval", fRpInterv)
 		variables.Conf.ReportInterval = fRpInterv
 	}
 
 	if fPInterv != 0 {
+		fmt.Println("Server set flag PollInterval", fPInterv)
 		variables.Conf.PollInterval = fPInterv
 	}
 }
