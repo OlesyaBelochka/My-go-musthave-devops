@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
@@ -36,36 +37,37 @@ func init() {
 
 	variables.Conf = config.New()
 
-	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&fStrInterv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fStrInterv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 	//fmt.Println("Restore = ", variables.Conf.Restore)
 	//RESTORE=true
 }
 
-//func setFlags() {
-//
-//	flag.Parse()
-//	if !fRstor {
-//		variables.Conf.Restore = fRstor
-//	}
-//
-//	if fAddr != "" {
-//		variables.Conf.Address = fAddr
-//	}
-//
-//	if fStrFile != "" {
-//		variables.Conf.StoreFile = fStrFile
-//	}
-//
-//	if fStrInterv != 0 {
-//		variables.Conf.StoreInterval = fStrInterv
-//	}
-//}
+func setFlags() {
+
+	flag.Parse()
+	if !fRstor {
+		variables.Conf.Restore = fRstor
+	}
+
+	if fAddr != "" {
+		variables.Conf.Address = fAddr
+	}
+
+	if fStrFile != "" {
+		variables.Conf.StoreFile = fStrFile
+	}
+
+	if fStrInterv != 0 {
+		variables.Conf.StoreInterval = fStrInterv
+	}
+}
 
 func main() {
-	//setFlags()
+
+	setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
