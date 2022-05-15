@@ -25,6 +25,23 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 }
 
+func sendStatusJSON(w http.ResponseWriter, status int) {
+
+	if status != http.StatusOK {
+
+		strJSON, err := json.Marshal(variables.Metrics{})
+		variables.PrinterErr(err, "HandleUpdateMetricsJSON "+"- Marshal error")
+
+		//	fmt.Println("ответ в файле JSON: " + string(strJSON))
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Status-URI", string(status))
+
+		_, err = w.Write(strJSON)
+		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
+	}
+
+}
+
 func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	if variables.ShowLog {
@@ -77,9 +94,8 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 				//fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%0.3f", value)
 			} else {
-				//fmt.Println("getMetric except format")
 
-				answer = fmt.Sprintf("%f", value)
+				answer = fmt.Sprintf("%0.10f", value)
 			}
 
 			st = http.StatusOK
@@ -109,14 +125,14 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		st = http.StatusBadRequest
 	}
 
-	if variables.ShowLog {
-		fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
-	}
+	//if variables.ShowFullLog {
+	fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
+	//}
 	return answer, st, err
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("star HandleGetMetric old")
+	//fmt.Println("star HandleGetMetric old")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
@@ -141,7 +157,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
-	fmt.Println("star HandleGetMetric Json")
+	//fmt.Println("star HandleGetMetric Json")
 
 	var resp variables.Metrics
 
@@ -205,7 +221,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("ответ в файле JSON: " + string(strJSON))
+	//	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -218,7 +234,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetrics old")
+	//fmt.Println("HandleUpdateMetrics old")
 	//var a = strings.Split(r.URL.String(), "/")
 
 	mType := chi.URLParam(r, "mType")
@@ -279,7 +295,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-
+	fmt.Println(string(body))
 	err = json.Unmarshal(body, &resp)
 
 	if err != nil {
@@ -289,45 +305,41 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	mType := resp.MType
 	mName := resp.ID
 
-	fmt.Println("type metric: ", mType, " name metric: ", mName)
+	//fmt.Println("type metric: ", mType, " name metric: ", mName)
+	fmt.Println("сюда 1")
 
 	if mName == "" || (mType != "gauge" && mType != "counter") {
-		sendStatus(w, http.StatusNotImplemented) // 501
+		fmt.Println("сюда 2")
+		sendStatusJSON(w, http.StatusNotImplemented) // 501
+
 		return
 	}
 
 	switch strings.ToLower(mType) {
 
 	case "gauge":
+		fmt.Println("попали в gauge")
 		val := *resp.Value
 
 		if err != nil {
-			sendStatus(w, http.StatusBadRequest) // 400
+			fmt.Println(err)
+			sendStatusJSON(w, http.StatusBadRequest) // 400
 			return
 		}
 
 		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
-		sendStatus(w, http.StatusOK)
+		sendStatusJSON(w, http.StatusOK)
 
 	case "counter":
-		fmt.Println(*resp.Delta)
+		fmt.Println("попали в counter")
+		//fmt.Println(*resp.Delta)
 		val := *resp.Delta
 
 		updater.UpdateCountMetric(mName, variables.Counter(val))
-		sendStatus(w, http.StatusOK)
+		sendStatusJSON(w, http.StatusOK)
 
 	default:
-		sendStatus(w, http.StatusNotImplemented) // 501
+		sendStatusJSON(w, http.StatusNotImplemented) // 501
 	}
-
-	strJSON, err := json.Marshal(variables.Metrics{})
-	variables.PrinterErr(err)
-
-	fmt.Println("ответ в файле JSON: " + string(strJSON))
-
-	w.Header().Set("Content-Type", "application/json")
-
-	_, err = w.Write(strJSON)
-	variables.PrinterErr(err)
 
 }

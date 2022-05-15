@@ -89,9 +89,9 @@ func (r *readerM) Close() error {
 	return r.file.Close()
 }
 
-func PrinterErr(err error) {
+func PrinterErr(err error, srt string) {
 	if err != nil {
-		fmt.Println("error : ", err)
+		fmt.Println(srt, err)
 		return
 	}
 

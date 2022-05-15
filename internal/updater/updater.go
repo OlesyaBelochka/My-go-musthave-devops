@@ -17,7 +17,7 @@ func Pall(ctx context.Context) {
 
 		select {
 		case <-timer.C:
-			variables.FShowLog("#update..")
+			// variables.FShowLog("#update..")
 
 			UpdateAllMetrics(variables.MemSt)
 		case <-ctx.Done():
@@ -65,7 +65,6 @@ func UpdateAllMetrics(st *runtime.MemStats) {
 }
 
 func UpdateGaugeMetric(name string, val variables.Gauge) {
-
 	if variables.ShowFullLog {
 		log.Printf("обновляем метку %v  в значение %v", name, val)
 	}
@@ -79,7 +78,5 @@ func UpdateCountMetric(name string, val variables.Counter) {
 	if variables.ShowFullLog {
 		log.Printf("обновляем метку %v  в значение %v", name, val)
 	}
-
 	variables.MC[name] = val
-
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
@@ -68,15 +67,15 @@ func init() {
 func main() {
 	//setFlags()
 
-	if variables.Conf.Restore {
-		fmt.Println("start RestoreMetricsFromFile")
-		go files.RestoreMetricsFromFile()
-	}
+	//if variables.Conf.Restore {
+	//	fmt.Println("start RestoreMetricsFromFile")
+	//	go files.RestoreMetricsFromFile()
+	//}
 
 	log.Println("Server has started, listening... ")
 	r := chi.NewRouter()
 
-	go files.Start()
+	//go files.Start()
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)

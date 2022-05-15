@@ -16,14 +16,14 @@ func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variabl
 
 	strJSON, err := json.Marshal(userData)
 	//variables.FShowLog(string(strJSON))
-	variables.PrinterErr(err)
+	variables.PrinterErr(err, "")
 
 	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
-	variables.PrinterErr(err)
+	variables.PrinterErr(err, "")
 
 	if resp != nil {
 		err = resp.Body.Close()
-		variables.PrinterErr(err)
+		variables.PrinterErr(err, "")
 	}
 
 	//if resp.StatusCode != 200 {
@@ -46,7 +46,7 @@ func sendUpdateRequest(fullPuth string, client http.Client) {
 	req.Header.Add("Content-Type", "text/plain")
 	resp, err := client.Do(req)
 
-	variables.PrinterErr(err)
+	variables.PrinterErr(err, "")
 
 	defer resp.Body.Close()
 
@@ -63,7 +63,7 @@ func gatgerData(client http.Client, URL string) {
 			Value: &vFl,
 		}
 		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
-		if variables.ShowFullLog {
+		if variables.ShowLog {
 			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, vFl)
 		}
 
@@ -80,7 +80,7 @@ func gatgerData(client http.Client, URL string) {
 
 		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
 
-		if variables.ShowFullLog {
+		if variables.ShowLog {
 			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, vInt)
 		}
 
@@ -98,7 +98,7 @@ func Report(ctx context.Context, URL string) {
 
 		select {
 		case <-timerReport.C:
-			variables.FShowLog("sending...")
+			// variables.FShowLog("sending...")
 			gatgerData(client, URL)
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done(): Report")
