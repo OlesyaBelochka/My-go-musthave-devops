@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
@@ -25,9 +24,9 @@ func init() {
 	//	log.Print("No .env file found")
 	//}
 	//
-	flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
 
 }
 
