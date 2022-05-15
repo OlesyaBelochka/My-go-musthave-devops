@@ -52,7 +52,7 @@ func main() {
 	log.Println("Client started, update and report")
 	variables.Conf = config.New()
 
-	setFlags()
+	//setFlags()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if variables.ShowLog {
