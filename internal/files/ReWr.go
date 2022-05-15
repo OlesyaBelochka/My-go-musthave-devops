@@ -61,9 +61,10 @@ func Start() {
 
 	timerStore := time.NewTimer(time.Duration(variables.Conf.StoreInterval) * time.Second)
 
+	osSigChan := make(chan os.Signal, 4)
+	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
 	for {
-		osSigChan := make(chan os.Signal, 4)
-		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		select {
 		case <-timerStore.C:
