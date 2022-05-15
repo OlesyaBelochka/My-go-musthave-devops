@@ -38,6 +38,7 @@ func UpdateAllMetrics(st *runtime.MemStats) {
 	UpdateGaugeMetric("GCSys", variables.Gauge(st.GCSys))
 	UpdateGaugeMetric("HeapAlloc", variables.Gauge(st.HeapAlloc))
 	UpdateGaugeMetric("HeapIdle", variables.Gauge(st.HeapIdle))
+	UpdateGaugeMetric("HeapInuse", variables.Gauge(st.HeapInuse))
 	UpdateGaugeMetric("HeapObjects", variables.Gauge(st.HeapObjects))
 	UpdateGaugeMetric("HeapReleased", variables.Gauge(st.HeapReleased))
 	UpdateGaugeMetric("HeapSys", variables.Gauge(st.HeapSys))
