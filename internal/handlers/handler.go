@@ -34,7 +34,7 @@ func sendStatusJSON(w http.ResponseWriter, status int) {
 
 		//	fmt.Println("ответ в файле JSON: " + string(strJSON))
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Status-URI", string(status))
+		//w.Header().Set("Status-URI", status)
 
 		_, err = w.Write(strJSON)
 		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
