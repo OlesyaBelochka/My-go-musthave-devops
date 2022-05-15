@@ -35,24 +35,24 @@ func setFlags() {
 	flag.Parse()
 
 	if fАddr != "" {
-		fmt.Println("Server set flag Addres", fАddr)
+		fmt.Println("Agent set flag Addres", fАddr)
 		variables.Conf.Address = fАddr
 	}
 
 	if fRpInterv != 0 {
-		fmt.Println("Server set flag ReportInterval", fRpInterv)
+		fmt.Println("Agent set flag ReportInterval", fRpInterv)
 		variables.Conf.ReportInterval = fRpInterv
 	}
 
 	if fPInterv != 0 {
-		fmt.Println("Server set flag PollInterval", fPInterv)
+		fmt.Println("Agent set flag PollInterval", fPInterv)
 		variables.Conf.PollInterval = fPInterv
 	}
 }
 
 func main() {
 
-	log.Println("Client started, update and report")
+	log.Println("Client started, update and report to IP ", variables.Conf.Address)
 	variables.Conf = config.New()
 
 	setFlags()

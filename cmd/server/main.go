@@ -50,23 +50,31 @@ func setFlags() {
 	flag.Parse()
 	if !fRstor {
 		fmt.Println("Server set flag Restore", fRstor)
-		variables.Conf.Restore = fRstor
+		if !variables.Conf.Restore {
+			variables.Conf.Restore = fRstor
+		}
 
 	}
 
 	if fAddr != "" {
-		fmt.Println("Server set flag Addres", fAddr)
-		variables.Conf.Address = fAddr
+		if variables.Conf.Address == "" {
+			fmt.Println("Server set flag Addres", fAddr)
+			variables.Conf.Address = fAddr
+		}
 	}
 
 	if fStrFile != "" {
 		fmt.Println("Server set flag StoreFile", fStrFile)
-		variables.Conf.StoreFile = fStrFile
+		if variables.Conf.StoreFile == "" {
+			variables.Conf.StoreFile = fStrFile
+		}
 	}
 
 	if fStrInterv != 0 {
-		fmt.Println("Server set flag StoreInterval", fStrInterv)
-		variables.Conf.StoreInterval = fStrInterv
+		if variables.Conf.StoreInterval == 0 {
+			fmt.Println("Server set flag StoreInterval", fStrInterv)
+			variables.Conf.StoreInterval = fStrInterv
+		}
 	}
 }
 
@@ -79,7 +87,7 @@ func main() {
 		go files.RestoreMetricsFromFile()
 	}
 
-	log.Println("Server has started, listening... ")
+	log.Println("Server has started, listening IP: " + variables.Conf.Address)
 
 	r := chi.NewRouter()
 
