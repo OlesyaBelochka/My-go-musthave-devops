@@ -59,8 +59,7 @@ func UpdateAllMetrics(st *runtime.MemStats) {
 	UpdateGaugeMetric("TotalAlloc", variables.Gauge(st.TotalAlloc))
 	UpdateGaugeMetric("RandomValue", variables.Gauge(rand.Int()))
 
-	v := variables.MC["PollCount"] + 1
-	UpdateCountMetric("PollCount", v)
+	UpdateCountMetric("PollCount", 1)
 
 }
 
@@ -76,7 +75,8 @@ func UpdateGaugeMetric(name string, val variables.Gauge) {
 func UpdateCountMetric(name string, val variables.Counter) {
 
 	if variables.ShowFullLog {
-		log.Printf("обновляем метку %v  в значение %v", name, val)
+		log.Printf("обновляем сounter метку %v  если уже существует добавляем %v", name, val)
 	}
-	variables.MC[name] = val
+
+	variables.MC[name] += val
 }

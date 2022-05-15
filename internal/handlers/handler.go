@@ -94,8 +94,8 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 				//fmt.Println("getMetric with format")
 				answer = fmt.Sprintf("%0.3f", value)
 			} else {
+				answer = strconv.FormatFloat(float64(value), 'f', -1, 64)
 
-				answer = fmt.Sprintf("%0.10f", value)
 			}
 
 			st = http.StatusOK
@@ -112,7 +112,8 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 				answer = fmt.Sprintf("%d", value)
 			} else {
 				//fmt.Println("getMetric except format")
-				answer = fmt.Sprintf("%d", value)
+				answer = strconv.FormatInt(int64(value), 10)
+				//answer = fmt.Sprintf("%d", value)
 			}
 			st = http.StatusOK
 		} else {
@@ -168,7 +169,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("GetMetricJSON Handler: " + string(body))
+	//fmt.Println("GetMetricJSON Handler: " + string(body))
 
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
