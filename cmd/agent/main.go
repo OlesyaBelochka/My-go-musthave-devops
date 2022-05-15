@@ -31,21 +31,21 @@ func init() {
 
 }
 
-func setFlags() {
-	flag.Parse()
-
-	if fАddr != "" {
-		variables.Conf.Address = fАddr
-	}
-
-	if fRpInterv != 0 {
-		variables.Conf.ReportInterval = fRpInterv
-	}
-
-	if fPInterv != 0 {
-		variables.Conf.PollInterval = fPInterv
-	}
-}
+//func setFlags() {
+//	flag.Parse()
+//
+//	if fАddr != "" {
+//		variables.Conf.Address = fАddr
+//	}
+//
+//	if fRpInterv != 0 {
+//		variables.Conf.ReportInterval = fRpInterv
+//	}
+//
+//	if fPInterv != 0 {
+//		variables.Conf.PollInterval = fPInterv
+//	}
+//}
 
 func main() {
 
