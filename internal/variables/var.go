@@ -19,7 +19,7 @@ type Gauge float64
 type Counter int64
 
 const (
-	ShowLog     = true
+	ShowLog     = false
 	ShowFullLog = false
 )
 

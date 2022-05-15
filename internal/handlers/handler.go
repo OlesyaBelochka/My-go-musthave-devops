@@ -285,7 +285,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetricsJSON")
+	//fmt.Println("HandleUpdateMetricsJSON")
 
 	//var a = strings.Split(r.URL.String(), "/")
 	var resp variables.Metrics
@@ -306,10 +306,10 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	mName := resp.ID
 
 	//fmt.Println("type metric: ", mType, " name metric: ", mName)
-	fmt.Println("сюда 1")
+	//fmt.Println("сюда 1")
 
 	if mName == "" || (mType != "gauge" && mType != "counter") {
-		fmt.Println("сюда 2")
+		//	fmt.Println("сюда 2")
 		sendStatusJSON(w, http.StatusNotImplemented) // 501
 
 		return
@@ -318,7 +318,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	switch strings.ToLower(mType) {
 
 	case "gauge":
-		fmt.Println("попали в gauge")
+		//fmt.Println("попали в gauge")
 		val := *resp.Value
 
 		if err != nil {
@@ -331,7 +331,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		sendStatusJSON(w, http.StatusOK)
 
 	case "counter":
-		fmt.Println("попали в counter")
+		//	fmt.Println("попали в counter")
 		//fmt.Println(*resp.Delta)
 		val := *resp.Delta
 
