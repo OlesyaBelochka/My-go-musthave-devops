@@ -6,18 +6,22 @@ import (
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"os"
 	"runtime"
+	"time"
 )
 
-const (
-	ReportInterval = 10
-	Address        = "127.0.0.1:8080"
-	PollInterval   = 2
-)
+//const (
+//	ReportInterval = 10
+//	Address        = "127.0.0.1:8080"
+//	PollInterval   = 2
+//)
 
 type Gauge float64
 type Counter int64
 
-const ShowLog = false
+const (
+	ShowLog     = true
+	ShowFullLog = false
+)
 
 var MG = map[string]Gauge{}
 
@@ -91,4 +95,9 @@ func PrinterErr(err error) {
 		return
 	}
 
+}
+func FShowLog(s string) {
+	if ShowLog {
+		fmt.Println(s, time.Now())
+	}
 }

@@ -1,26 +1,35 @@
 package updater
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"math/rand"
 	"runtime"
+	"time"
 
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
 
-func Pall() {
+func Pall(ctx context.Context) {
 
-	if variables.ShowLog {
-		fmt.Println("#update..")
+	for {
+		timer := time.NewTimer(time.Duration(variables.Conf.PollInterval) * time.Second)
+
+		select {
+		case <-timer.C:
+			variables.FShowLog("#update..")
+
+			UpdateAllMetrics(variables.MemSt)
+		case <-ctx.Done():
+			variables.FShowLog("ctx.Done()")
+			return
+		}
 	}
-
-	runtime.ReadMemStats(variables.MemSt)
-	UpdateAllMetrics(variables.MemSt)
 
 }
 
 func UpdateAllMetrics(st *runtime.MemStats) {
+	runtime.ReadMemStats(variables.MemSt)
 
 	UpdateGaugeMetric("Alloc", variables.Gauge(st.Alloc))
 	UpdateGaugeMetric("BuckHashSys", variables.Gauge(st.BuckHashSys))
@@ -57,7 +66,7 @@ func UpdateAllMetrics(st *runtime.MemStats) {
 
 func UpdateGaugeMetric(name string, val variables.Gauge) {
 
-	if variables.ShowLog {
+	if variables.ShowFullLog {
 		log.Printf("обновляем метку %v  в значение %v", name, val)
 	}
 
@@ -67,7 +76,7 @@ func UpdateGaugeMetric(name string, val variables.Gauge) {
 
 func UpdateCountMetric(name string, val variables.Counter) {
 
-	if variables.ShowLog {
+	if variables.ShowFullLog {
 		log.Printf("обновляем метку %v  в значение %v", name, val)
 	}
 

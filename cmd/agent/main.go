@@ -1,17 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 )
 
 var (
@@ -48,42 +47,56 @@ func init() {
 //}
 
 func main() {
-	log.Println("Клиент запустился, обновляет и отправляет")
-	//conf := config.New()
+
+	log.Println("Client started, update and report")
+	variables.Conf = config.New()
 
 	//setFlags()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	//defer cancel()
 
 	if variables.ShowLog {
-		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", variables.Address, variables.ReportInterval, variables.PollInterval)
+		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", variables.Conf.Address, variables.Conf.ReportInterval, variables.Conf.PollInterval)
 	}
 
 	endpoint := "/update/"
 
-	client := http.Client{}
+	osSigChan := make(chan os.Signal, 1)
+	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	timer10 := time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
+	go updater.Pall(ctx)
 
-	for {
-		osSigChan := make(chan os.Signal, 4)
-		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go reporters.Report(ctx, "http://"+variables.Conf.Address+endpoint)
 
-		timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
+	sigEnd := <-osSigChan
+	fmt.Println("Get signal", sigEnd)
+	cancel()
 
-		select {
-
-		case <-timer10.C:
-
-			timer10 = time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
-			updater.Pall()
-			reporters.Report("http://127.0.0.1:8080"+endpoint, client)
-
-		case <-timer.C:
-			updater.Pall()
-		case <-osSigChan:
-
-			os.Exit(1)
-			return
-		}
-	}
+	//timer10 := time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
+	//
+	//for {
+	//
+	//	osSigChan := make(chan os.Signal, 1)
+	//	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	//
+	//	timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
+	//
+	//	select {
+	//
+	//	case <-timer10.C:
+	//
+	//		timer10 = time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
+	//		updater.Pall()
+	//		reporters.Report("http://127.0.0.1:8080"+endpoint, client)
+	//
+	//	case <-timer.C:
+	//		updater.Pall()
+	//	case <-osSigChan:
+	//
+	//		os.Exit(1)
+	//		return
+	//	}
+	//}
 
 }

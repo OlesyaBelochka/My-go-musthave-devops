@@ -2,12 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -17,29 +21,29 @@ var (
 )
 
 func init() {
-	////os.Setenv("RESTORE", "true")
-	////os.Setenv("ADDRESS", "127.0.0.1:8080")
-	////os.Setenv("STORE_FILE", "/tmp/devops-metrics-db.json")
-	//
-	////if err := godotenv.Load(); err != nil {
-	////	log.Print("No .env file found")
-	////}
-	//
-	//path, exists := os.LookupEnv("RESTORE")
-	//
-	//if exists {
-	//	// Print the value of the environment variable
-	//	fmt.Println("Print the value of the environment variable", path)
+	//os.Setenv("RESTORE", "true")
+	//os.Setenv("ADDRESS", "127.0.0.1:8080")
+	//os.Setenv("STORE_FILE", "/tmp/devops-metrics-db.json")
+
+	//if err := godotenv.Load(); err != nil {
+	//	log.Print("No .env file found")
 	//}
-	//
-	//variables.Conf = config.New()
-	//
-	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&fStrInterv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-	////fmt.Println("Restore = ", variables.Conf.Restore)
-	////RESTORE=true
+
+	path, exists := os.LookupEnv("RESTORE")
+
+	if exists {
+		// Print the value of the environment variable
+		fmt.Println("Print the value of the environment variable", path)
+	}
+
+	variables.Conf = config.New()
+
+	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "i", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fStrInterv, "f", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	//fmt.Println("Restore = ", variables.Conf.Restore)
+	//RESTORE=true
 }
 func setFlags() {
 
@@ -62,17 +66,17 @@ func setFlags() {
 }
 
 func main() {
-	//setFlags()
+	setFlags()
 
-	//if variables.Conf.Restore {
-	//	fmt.Println("start RestoreMetricsFromFile")
-	//	go files.RestoreMetricsFromFile()
-	//}
+	if variables.Conf.Restore {
+		fmt.Println("start RestoreMetricsFromFile")
+		go files.RestoreMetricsFromFile()
+	}
 
 	log.Println("Server has started, listening... ")
 	r := chi.NewRouter()
 
-	//go files.Start()
+	go files.Start()
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -92,9 +96,9 @@ func main() {
 	r.Post("/update", handlers.HandleUpdateMetricsJSON)
 	r.Post("/value", handlers.HandleGetMetricJSON)
 
-	//if variables.Conf.Address != "" {
-	//http.ListenAndServe(variables.Conf.Address, r)
-	http.ListenAndServe("127.0.0.1:8080", r)
-	//}
+	if variables.Conf.Address != "" {
+		http.ListenAndServe(variables.Conf.Address, r)
+		//http.ListenAndServe("127.0.0.1:8080", r)
+	}
 
 }
