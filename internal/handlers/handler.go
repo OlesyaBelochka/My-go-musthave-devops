@@ -126,7 +126,7 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	}
 
 	//if variables.ShowFullLog {
-	fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
+	//fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
 	//}
 	return answer, st, err
 }
@@ -168,6 +168,8 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("GetMetricJSON Handler: " + string(body))
+
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
 		fmt.Println(w, "can't unmarshal: ", err.Error())
@@ -180,6 +182,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	val, code, err := getMetric(mType, mName, false)
 
 	if err != nil {
+		fmt.Println("#mistake getMetric: ", code, err)
 		http.Error(w, err.Error(), code)
 		return
 	}
@@ -195,7 +198,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		resp.Value = &valFl
 
 		if variables.ShowLog {
-			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valFl, " в HandleGetMetric Json")
+			fmt.Println("#подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valFl, " в HandleGetMetric Json")
 		}
 
 	case "counter":
@@ -208,7 +211,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		resp.Delta = &valInt
 
 		if variables.ShowLog {
-			fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valInt, " в HandleGetMetric Json")
+			fmt.Println("#подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valInt, " в HandleGetMetric Json")
 		}
 		//default:
 		//	st := http.StatusBadRequest
@@ -220,6 +223,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
 
 	//	fmt.Println("ответ в файле JSON: " + string(strJSON))
 
@@ -285,7 +289,6 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("HandleUpdateMetricsJSON")
 
 	//var a = strings.Split(r.URL.String(), "/")
 	var resp variables.Metrics
@@ -295,7 +298,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(string(body))
+	fmt.Println("#UpdateMetricsJSON Handler: " + string(body))
 	err = json.Unmarshal(body, &resp)
 
 	if err != nil {

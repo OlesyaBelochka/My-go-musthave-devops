@@ -59,7 +59,7 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			assert.Contains(t, tt.want.contentType, result.Header.Get("Content-Type"))
 
 			err := result.Body.Close()
-			variables.PrinterErr(err)
+			variables.PrinterErr(err, "")
 		})
 	}
 

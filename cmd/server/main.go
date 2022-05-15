@@ -73,6 +73,7 @@ func main() {
 	//}
 
 	log.Println("Server has started, listening... ")
+
 	r := chi.NewRouter()
 
 	//go files.Start()
