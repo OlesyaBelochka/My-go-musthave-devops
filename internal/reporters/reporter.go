@@ -18,11 +18,13 @@ func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variabl
 	//variables.FShowLog(string(strJSON))
 	variables.PrinterErr(err)
 
-	_, err = http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
-	//variables.PrinterErr(err)
+	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
+	variables.PrinterErr(err)
 
-	//err = resp.Body.Close()
-	//variables.PrinterErr(err)
+	if resp != nil {
+		err = resp.Body.Close()
+		variables.PrinterErr(err)
+	}
 
 	//if resp.StatusCode != 200 {
 	//	_, err := io.ReadAll(resp.Body)

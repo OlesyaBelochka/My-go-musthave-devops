@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
@@ -24,37 +25,35 @@ func init() {
 	//	log.Print("No .env file found")
 	//}
 	//
-	//flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
-	//flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fRpInterv, "f", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&fPInterv, "f", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
 
 }
 
-//func setFlags() {
-//	flag.Parse()
-//
-//	if fАddr != "" {
-//		variables.Conf.Address = f_addr
-//	}
-//
-//	if fRpInterv != 0 {
-//		variables.Conf.ReportInterval = f_rp_interv
-//	}
-//
-//	if fPInterv != 0 {
-//		variables.Conf.PollInterval = f_p_interv
-//	}
-//}
+func setFlags() {
+	flag.Parse()
+
+	if fАddr != "" {
+		variables.Conf.Address = fАddr
+	}
+
+	if fRpInterv != 0 {
+		variables.Conf.ReportInterval = fRpInterv
+	}
+
+	if fPInterv != 0 {
+		variables.Conf.PollInterval = fPInterv
+	}
+}
 
 func main() {
 
 	log.Println("Client started, update and report")
 	variables.Conf = config.New()
 
-	//setFlags()
+	setFlags()
 	ctx, cancel := context.WithCancel(context.Background())
-
-	//defer cancel()
 
 	if variables.ShowLog {
 		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", variables.Conf.Address, variables.Conf.ReportInterval, variables.Conf.PollInterval)
@@ -72,31 +71,5 @@ func main() {
 	sigEnd := <-osSigChan
 	fmt.Println("Get signal", sigEnd)
 	cancel()
-
-	//timer10 := time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
-	//
-	//for {
-	//
-	//	osSigChan := make(chan os.Signal, 1)
-	//	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	//
-	//	timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
-	//
-	//	select {
-	//
-	//	case <-timer10.C:
-	//
-	//		timer10 = time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
-	//		updater.Pall()
-	//		reporters.Report("http://127.0.0.1:8080"+endpoint, client)
-	//
-	//	case <-timer.C:
-	//		updater.Pall()
-	//	case <-osSigChan:
-	//
-	//		os.Exit(1)
-	//		return
-	//	}
-	//}
 
 }
