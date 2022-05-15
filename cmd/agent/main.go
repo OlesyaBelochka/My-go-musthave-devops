@@ -62,10 +62,10 @@ func main() {
 	client := http.Client{}
 
 	timer10 := time.NewTimer(time.Duration(variables.ReportInterval) * time.Second)
+	osSigChan := make(chan os.Signal, 4)
+	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	for {
-		osSigChan := make(chan os.Signal, 4)
-		signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 		timer := time.NewTimer(time.Duration(variables.PollInterval) * time.Second)
 
