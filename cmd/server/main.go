@@ -50,9 +50,9 @@ func setFlags() {
 	flag.Parse()
 	if !fRstor {
 		fmt.Println("Server set flag Restore", fRstor)
-		if !variables.Conf.Restore {
-			variables.Conf.Restore = fRstor
-		}
+		//if !variables.Conf.Restore {
+		variables.Conf.Restore = fRstor == variables.Conf.Restore
+		//}
 
 	}
 
