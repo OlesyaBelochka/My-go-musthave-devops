@@ -90,8 +90,8 @@ func setFlags() {
 }
 
 func main() {
-
-	setFlags()
+	//вообще убрала флаги
+	//setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
