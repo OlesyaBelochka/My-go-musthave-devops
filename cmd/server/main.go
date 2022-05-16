@@ -87,20 +87,36 @@ func setFlags() {
 	//	}
 	//}
 
-	if !fRstor && !variables.Conf.Restore {
-		variables.Conf.Restore = fRstor
-		fmt.Println("Server set flag Restore", fRstor)
-	} else {
+	//if !fRstor && !variables.Conf.Restore {
+	//	variables.Conf.Restore = fRstor
+	//	fmt.Println("Server set flag Restore", fRstor)
+	//} else {
+	//	variables.Conf.Restore = config.DefaultRestore
+	//}
+
+	if !variables.Conf.Restore {
 		variables.Conf.Restore = config.DefaultRestore
+
+		if !fRstor {
+			variables.Conf.Restore = fRstor
+		}
 	}
 
 	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore)
 
-	if fAddr != "" && variables.Conf.Address == "" {
-		variables.Conf.Address = fAddr
-		fmt.Println("Server set flag Addres", fAddr)
-	} else {
+	//if fAddr != "" && variables.Conf.Address == "" {
+	//	variables.Conf.Address = fAddr
+	//	fmt.Println("Server set flag Addres", fAddr)
+	//} else {
+	//	variables.Conf.Address = config.DefaultAddress
+	//}
+
+	if variables.Conf.Address == "" {
+
 		variables.Conf.Address = config.DefaultAddress
+		if fAddr != "" {
+			variables.Conf.Address = fAddr
+		}
 	}
 
 	fmt.Println("variables.Conf.Address = ", variables.Conf.Address)
@@ -128,7 +144,7 @@ func setFlags() {
 
 func main() {
 
-	//setFlags()
+	setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
