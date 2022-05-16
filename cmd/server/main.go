@@ -49,7 +49,7 @@ func init() {
 
 func setFlags() {
 
-	//flag.Parse()
+	flag.Parse()
 
 	//if !fRstor && !variables.Conf.Restore {
 	//	variables.Conf.Restore = fRstor
@@ -129,7 +129,7 @@ func setFlags() {
 
 func main() {
 
-	setFlags()
+	//setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
