@@ -37,16 +37,24 @@ func setFlags() {
 	if fАddr != "" {
 		fmt.Println("Agent set flag Addres", fАddr)
 		variables.Conf.Address = fАddr
+	} else {
+		variables.Conf.Address = config.DefaultAddress
 	}
 
 	if fRpInterv != 0 {
 		fmt.Println("Agent set flag ReportInterval", fRpInterv)
 		variables.Conf.ReportInterval = fRpInterv
+
+	} else {
+		variables.Conf.ReportInterval = config.DefaultReportInterval
 	}
 
 	if fPInterv != 0 {
 		fmt.Println("Agent set flag PollInterval", fPInterv)
 		variables.Conf.PollInterval = fPInterv
+	} else {
+
+		variables.Conf.PollInterval = config.DefaultPollInterval
 	}
 }
 

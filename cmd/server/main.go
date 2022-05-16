@@ -38,9 +38,9 @@ func init() {
 
 	variables.Conf = config.New()
 	//
-	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.BoolVar(&fRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "f", config.DefaultAddress, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 	//fmt.Println("Restore = ", variables.Conf.Restore)
 	//RESTORE=true
