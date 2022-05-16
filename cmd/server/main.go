@@ -154,7 +154,7 @@ func setFlags() {
 
 func main() {
 
-	setFlags()
+	//setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
