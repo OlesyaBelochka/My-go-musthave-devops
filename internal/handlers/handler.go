@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
 	"io"
 	"log"
@@ -25,20 +26,54 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 }
 
-func sendStatusJSON(w http.ResponseWriter, status int) {
+func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e string) {
+	resp := variables.ServResponses{}
 
-	if status != http.StatusOK {
+	if status == http.StatusOK {
 
-		strJSON, err := json.Marshal(variables.Metrics{})
-		variables.PrinterErr(err, "HandleUpdateMetricsJSON "+"- Marshal error")
-
-		//	fmt.Println("ответ в файле JSON: " + string(strJSON))
-		w.Header().Set("Content-Type", "application/json")
-		//w.Header().Set("Status-URI", status)
-
-		_, err = w.Write(strJSON)
-		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
+		resp = variables.ServResponses{
+			Result: "Data update succesfully",
+			Error:  "",
+		}
+	} else {
+		resp = variables.ServResponses{
+			Result: "Unsuccesfully",
+			Error:  e,
+		}
 	}
+
+	strJSON, err := json.Marshal(resp)
+
+	fmt.Println("#(sendResponceJSON) " + string(strJSON))
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("(sendResponceJSON) Marshal error: " + err.Error()))
+		fmt.Println("# (sendResponceJSON) Marshal error: " + err.Error())
+		return
+	}
+
+	if needCompression {
+		w.Header().Set("Content-Encoding", "gzip")
+		strJSON, err = compression.Compress(strJSON)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
+			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
+			return
+		}
+	}
+
+	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(strJSON)
+
+	if err != nil {
+		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
+		return
+	}
+
+	fmt.Println("#(sendResponceJSON) responce succesfully")
 
 }
 
@@ -292,58 +327,61 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 	//var a = strings.Split(r.URL.String(), "/")
-	var resp variables.Metrics
+	var (
+		metrics         variables.Metrics
+		needCompression bool
+	)
+
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+			needCompression = true
+		}
+	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	if needCompression {
+		body, err = compression.Decompress(body)
+		variables.PrinterErr(err, "#UpdateMetricsJSON mistake decompression: ")
+	}
+
 	fmt.Println("#UpdateMetricsJSON Handler: " + string(body))
-	err = json.Unmarshal(body, &resp)
+	err = json.Unmarshal(body, &metrics)
 
 	if err != nil {
 		fmt.Println(w, "can't unmarshal: ", err.Error())
 	}
 
-	mType := resp.MType
-	mName := resp.ID
-
-	//fmt.Println("type metric: ", mType, " name metric: ", mName)
-	//fmt.Println("сюда 1")
+	mType := metrics.MType
+	mName := metrics.ID
 
 	if mName == "" || (mType != "gauge" && mType != "counter") {
-		//	fmt.Println("сюда 2")
-		sendStatusJSON(w, http.StatusNotImplemented) // 501
 
+		sendResponceJSON(w, http.StatusNotImplemented, false, "can't find gauge or counter or empty id") // 501
 		return
 	}
 
 	switch strings.ToLower(mType) {
 
 	case "gauge":
-		//fmt.Println("попали в gauge")
-		val := *resp.Value
-
-		if err != nil {
-			fmt.Println(err)
-			sendStatusJSON(w, http.StatusBadRequest) // 400
-			return
-		}
+		val := *metrics.Value
 
 		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
-		sendStatusJSON(w, http.StatusOK)
+		sendResponceJSON(w, http.StatusOK, needCompression, "")
 
 	case "counter":
-		//	fmt.Println("попали в counter")
-		//fmt.Println(*resp.Delta)
-		val := *resp.Delta
+
+		val := *metrics.Delta
 
 		updater.UpdateCountMetric(mName, variables.Counter(val))
-		sendStatusJSON(w, http.StatusOK)
+		sendResponceJSON(w, http.StatusOK, needCompression, "")
 
 	default:
-		sendStatusJSON(w, http.StatusNotImplemented) // 501
+		sendResponceJSON(w, http.StatusNotImplemented, needCompression, "default switch") // 501
 	}
 
 }

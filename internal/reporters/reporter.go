@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -18,8 +21,27 @@ func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variabl
 	//variables.FShowLog(string(strJSON))
 	variables.PrinterErr(err, "")
 
-	resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
-	variables.PrinterErr(err, "")
+	strJSON, err = compression.Compress(strJSON)
+
+	// fmt.Println(strJSON)
+	if err != nil {
+		// вызываем останову агента и разбираемся. потом удали
+
+		variables.PrinterErr(err, "# mitake during compression:")
+		os.Exit(1)
+	}
+
+	req, err := http.NewRequest("POST", fullPuth, bytes.NewBuffer(strJSON))
+	variables.PrinterErr(err, "# mistake NewRequest : ")
+
+	req.Header.Set("Content-Type", "application/json")
+
+	req.Header.Set("Content-Encoding", "gzip")
+
+	resp, err := client.Do(req)
+	variables.PrinterErr(err, "# sending mistake :")
+	fmt.Println("клиент отправил: ", req)
+	//resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
 
 	if resp != nil {
 		err = resp.Body.Close()

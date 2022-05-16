@@ -38,6 +38,11 @@ type Metrics struct {
 	Value *float64 `json:"value,omitempty"` // значение метрики в случае передачи gauge
 }
 
+type ServResponses struct {
+	Result string `json:"rez"`
+	Error  string `json:"err"`
+}
+
 type writerM struct {
 	file    *os.File
 	encoder *json.Encoder
