@@ -34,11 +34,19 @@ func init() {
 func setFlags() {
 	flag.Parse()
 
-	if fАddr != "" {
-		fmt.Println("Agent set flag Addres", fАddr)
-		variables.Conf.Address = fАddr
-	} else {
+	//if fАddr != "" && variables.Conf.Address =="" {
+	//	fmt.Println("Agent set flag Addres", fАddr)
+	//	variables.Conf.Address = fАddr
+	//} else {
+	//	variables.Conf.Address = config.DefaultAddress
+	//}
+
+	if variables.Conf.Address == "" {
+
 		variables.Conf.Address = config.DefaultAddress
+		if fАddr != "" {
+			variables.Conf.Address = fАddr
+		}
 	}
 
 	if fRpInterv != 0 {
@@ -63,7 +71,8 @@ func main() {
 	variables.Conf = config.New()
 	log.Println("Client started, update and report to IP ", variables.Conf.Address)
 
-	//setFlags()
+	setFlags()
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if variables.ShowLog {
