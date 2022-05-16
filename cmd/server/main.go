@@ -38,10 +38,16 @@ func init() {
 
 	variables.Conf = config.New()
 	//
-	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+
+	flag.BoolVar(&fRstor, "r", variables.Conf.Restore, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", variables.Conf.Address, "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "f", variables.Conf.StoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+
 	fmt.Println("Restore = ", variables.Conf.Restore)
 	//RESTORE=true
 }
@@ -98,7 +104,7 @@ func setFlags() {
 	if !variables.Conf.Restore {
 		variables.Conf.Restore = config.DefaultRestore
 
-		if !fRstor {
+		if fRstor {
 			variables.Conf.Restore = fRstor
 		}
 	}
@@ -122,21 +128,24 @@ func setFlags() {
 
 	fmt.Println("variables.Conf.Address = ", variables.Conf.Address)
 
-	if fStrFile != "" && variables.Conf.StoreFile == "" {
-		fmt.Println("Server set flag StoreFile", fStrFile)
-		variables.Conf.StoreFile = fStrFile
-	} else {
+	if variables.Conf.StoreFile == "" {
+
 		variables.Conf.StoreFile = config.DefaultStoreFile
+
+		if fStrFile != "" {
+			variables.Conf.StoreFile = fStrFile
+		}
 	}
 
 	fmt.Println("variables.Conf.StoreFileExport = ", variables.Conf.StoreFile)
 
-	if fStrInterv != 0 && variables.Conf.StoreInterval == 0 {
-		variables.Conf.StoreInterval = int64(fStrInterv)
-		fmt.Println("Server set flag StoreInterval", fStrInterv)
-	} else {
+	if variables.Conf.StoreInterval == 0 {
+
 		variables.Conf.StoreInterval = config.DefaultStoreInterval
 
+		if fStrInterv != 0 {
+			variables.Conf.StoreInterval = int64(fStrInterv)
+		}
 	}
 
 	fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval)
