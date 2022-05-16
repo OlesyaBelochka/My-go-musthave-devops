@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
@@ -37,17 +38,17 @@ func init() {
 
 	variables.Conf = config.New()
 	//
-	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-	//fmt.Println("Restore = ", variables.Conf.Restore)
+	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	fmt.Println("Restore = ", variables.Conf.Restore)
 	//RESTORE=true
 }
 
 func setFlags() {
 	//
-	//flag.Parse()
+	flag.Parse()
 	//if !fRstor {
 	//	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore, " fRstor = ", fRstor)
 	//
