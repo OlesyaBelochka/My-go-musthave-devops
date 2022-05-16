@@ -5,13 +5,13 @@ import (
 	"strconv"
 )
 
-var (
-	DefaultAddress        string = "127.0.0.1:8080"
-	DefaultStoreInterval  int64  = 300
-	DefaultStoreFile             = "/tmp/devops-metrics-db.json"
-	DefaultRestore               = true
-	DefaultPollInterval   int64  = 2
-	DefaultReportInterval int64  = 10
+const (
+	DefaultAddress              = "127.0.0.1:8080"
+	DefaultStoreInterval  int64 = 300
+	DefaultStoreFile            = "/tmp/devops-metrics-db.json"
+	DefaultRestore              = true
+	DefaultPollInterval   int64 = 2
+	DefaultReportInterval int64 = 10
 )
 
 type Config struct {
@@ -24,29 +24,30 @@ type Config struct {
 }
 
 // New returns a new Config struct
-//func New() *Config {
-//
-//	return &Config{
-//		Address:        getEnv("ADDRESS", DefaultAddress),
-//		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultStoreInterval),
-//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
-//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
-//		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
-//		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
-//	}
-//}
 
 func New() *Config {
 
 	return &Config{
-		Address:        getEnv("ADDRESS", "127.0.0.1:8080"),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
-		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-		StoreFile:      getEnv("STORE_FILE", "/tmp/devops-metrics-db.json"),
-		Restore:        getEnvAsBool("RESTORE", true),
+		Address:        getEnv("ADDRESS", DefaultAddress),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultPollInterval),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
+		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
+		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
+		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
 	}
 }
+
+//func New() *Config {
+//
+//	return &Config{
+//		Address:        getEnv("ADDRESS", "127.0.0.1:8080"),
+//		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
+//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
+//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
+//		StoreFile:      getEnv("STORE_FILE", "/tmp/devops-metrics-db.json"),
+//		Restore:        getEnvAsBool("RESTORE", true),
+//	}
+//}
 
 func getEnv(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
