@@ -49,7 +49,7 @@ func init() {
 
 func setFlags() {
 
-	flag.Parse()
+	//flag.Parse()
 
 	//if !fRstor && !variables.Conf.Restore {
 	//	variables.Conf.Restore = fRstor

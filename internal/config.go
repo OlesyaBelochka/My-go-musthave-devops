@@ -27,12 +27,18 @@ type Config struct {
 func New() *Config {
 
 	return &Config{
-		Address:        getEnv("ADDRESS", ""),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", 0),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 0),
-		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 0),
-		StoreFile:      getEnv("STORE_FILE", ""),
-		Restore:        getEnvAsBool("RESTORE", false),
+		//Address:        getEnv("ADDRESS", ""),
+		//PollInterval:   getEnvAsInt("POLL_INTERVAL", 0),
+		//ReportInterval: getEnvAsInt("REPORT_INTERVAL", 0),
+		//StoreInterval:  getEnvAsInt("STORE_INTERVAL", 0),
+		//StoreFile:      getEnv("STORE_FILE", ""),
+		//Restore:        getEnvAsBool("RESTORE", false),
+		Address:        getEnv("ADDRESS", DefaultAddress),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultStoreInterval),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
+		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
+		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
+		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
 	}
 }
 
