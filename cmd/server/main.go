@@ -49,44 +49,44 @@ func init() {
 func setFlags() {
 
 	flag.Parse()
-	if !fRstor {
-		fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore, " fRstor = ", fRstor)
 
+	if !fRstor && !variables.Conf.Restore {
+		variables.Conf.Restore = fRstor
 		fmt.Println("Server set flag Restore", fRstor)
+	} else {
+		variables.Conf.Restore = config.DefaultRestore
+	}
 
-		if !variables.Conf.Restore {
-			variables.Conf.Restore = fRstor
-		}
+	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore)
+
+	if fAddr != "" && variables.Conf.Address == "" {
+		variables.Conf.Address = fAddr
+		fmt.Println("Server set flag Addres", fAddr)
+	} else {
+		variables.Conf.Address = config.DefaultAddress
+	}
+
+	fmt.Println("variables.Conf.Address = ", variables.Conf.Address)
+
+	if fStrFile != "" && variables.Conf.StoreFile == "" {
+		fmt.Println("Server set flag StoreFile", fStrFile)
+		variables.Conf.StoreFile = fStrFile
+	} else {
+		variables.Conf.StoreFile = config.DefaultStoreFile
+	}
+
+	fmt.Println("variables.Conf.StoreFileExport = ", variables.Conf.StoreFile)
+
+	if fStrInterv != 0 && variables.Conf.StoreInterval == 0 {
+		variables.Conf.StoreInterval = int64(fStrInterv)
+		fmt.Println("Server set flag StoreInterval", fStrInterv)
+	} else {
+		variables.Conf.StoreInterval = config.DefaultStoreInterval
 
 	}
 
-	if fAddr != "" {
+	fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval)
 
-		fmt.Println("variables.Conf.Address = ", variables.Conf.Address, " fAddr = ", fAddr)
-
-		if variables.Conf.Address == "" {
-			fmt.Println("Server set flag Addres", fAddr)
-			variables.Conf.Address = fAddr
-		}
-	}
-
-	if fStrFile != "" {
-		fmt.Println("variables.Conf.StoreFileexport = ", variables.Conf.StoreFile, " fStrFile = ", fStrFile)
-
-		if variables.Conf.StoreFile == "" {
-			fmt.Println("Server set flag StoreFile", fStrFile)
-			variables.Conf.StoreFile = fStrFile
-		}
-	}
-
-	if fStrInterv != 0 {
-		fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval, " fStrInterv = ", fStrInterv)
-
-		if variables.Conf.StoreInterval == 0 {
-			fmt.Println("Server set flag StoreInterval", fStrInterv)
-			variables.Conf.StoreInterval = int64(fStrInterv)
-		}
-	}
 }
 
 func main() {

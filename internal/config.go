@@ -5,6 +5,13 @@ import (
 	"strconv"
 )
 
+var (
+	DefaultAddress             = "127.0.0.1:8080"
+	DefaultStoreInterval int64 = 300
+	DefaultStoreFile           = "/tmp/devops-metrics-db.json"
+	DefaultRestore             = true
+)
+
 type Config struct {
 	Address        string
 	PollInterval   int64
@@ -18,12 +25,12 @@ type Config struct {
 func New() *Config {
 
 	return &Config{
-		Address:        getEnv("ADDRESS", "127.0.0.1:8080"),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
-		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-		StoreFile:      getEnv("STORE_FILE", "/tmp/devops-metrics-db.json"),
-		Restore:        getEnvAsBool("RESTORE", true),
+		Address:        getEnv("ADDRESS", ""),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", 0),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 0),
+		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 0),
+		StoreFile:      getEnv("STORE_FILE", ""),
+		Restore:        getEnvAsBool("RESTORE", false),
 	}
 }
 
