@@ -5,14 +5,14 @@ import (
 	"strconv"
 )
 
-var (
-	DefaultAddress              = "127.0.0.1:8080"
-	DefaultStoreInterval  int64 = 300
-	DefaultStoreFile            = "/tmp/devops-metrics-db.json"
-	DefaultRestore              = true
-	DefaultPollInterval   int64 = 2
-	DefaultReportInterval int64 = 10
-)
+//var (
+//	DefaultAddress              = "127.0.0.1:8080"
+//	DefaultStoreInterval  int64 = 300
+//	DefaultStoreFile            = "/tmp/devops-metrics-db.json"
+//	DefaultRestore              = true
+//	DefaultPollInterval   int64 = 2
+//	DefaultReportInterval int64 = 10
+//)
 
 type Config struct {
 	Address        string

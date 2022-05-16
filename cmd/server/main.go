@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
@@ -38,60 +37,60 @@ func init() {
 
 	variables.Conf = config.New()
 	//
-	flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 	//fmt.Println("Restore = ", variables.Conf.Restore)
 	//RESTORE=true
 }
 
 func setFlags() {
-
-	flag.Parse()
-	if !fRstor {
-		fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore, " fRstor = ", fRstor)
-
-		fmt.Println("Server set flag Restore", fRstor)
-
-		if !variables.Conf.Restore {
-			variables.Conf.Restore = fRstor
-		}
-
-	}
-
-	if fAddr != "" {
-
-		fmt.Println("variables.Conf.Address = ", variables.Conf.Address, " fAddr = ", fAddr)
-
-		if variables.Conf.Address == "" {
-			fmt.Println("Server set flag Addres", fAddr)
-			variables.Conf.Address = fAddr
-		}
-	}
-
-	if fStrFile != "" {
-		fmt.Println("variables.Conf.StoreFileexport = ", variables.Conf.StoreFile, " fStrFile = ", fStrFile)
-
-		if variables.Conf.StoreFile == "" {
-			fmt.Println("Server set flag StoreFile", fStrFile)
-			variables.Conf.StoreFile = fStrFile
-		}
-	}
-
-	if fStrInterv != 0 {
-		fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval, " fStrInterv = ", fStrInterv)
-
-		if variables.Conf.StoreInterval == 0 {
-			fmt.Println("Server set flag StoreInterval", fStrInterv)
-			variables.Conf.StoreInterval = int64(fStrInterv)
-		}
-	}
+	//
+	//flag.Parse()
+	//if !fRstor {
+	//	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore, " fRstor = ", fRstor)
+	//
+	//	fmt.Println("Server set flag Restore", fRstor)
+	//
+	//	if !variables.Conf.Restore {
+	//		variables.Conf.Restore = fRstor
+	//	}
+	//
+	//}
+	//
+	//if fAddr != "" {
+	//
+	//	fmt.Println("variables.Conf.Address = ", variables.Conf.Address, " fAddr = ", fAddr)
+	//
+	//	if variables.Conf.Address == "" {
+	//		fmt.Println("Server set flag Addres", fAddr)
+	//		variables.Conf.Address = fAddr
+	//	}
+	//}
+	//
+	//if fStrFile != "" {
+	//	fmt.Println("variables.Conf.StoreFileexport = ", variables.Conf.StoreFile, " fStrFile = ", fStrFile)
+	//
+	//	if variables.Conf.StoreFile == "" {
+	//		fmt.Println("Server set flag StoreFile", fStrFile)
+	//		variables.Conf.StoreFile = fStrFile
+	//	}
+	//}
+	//
+	//if fStrInterv != 0 {
+	//	fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval, " fStrInterv = ", fStrInterv)
+	//
+	//	if variables.Conf.StoreInterval == 0 {
+	//		fmt.Println("Server set flag StoreInterval", fStrInterv)
+	//		variables.Conf.StoreInterval = int64(fStrInterv)
+	//	}
+	//}
 }
 
 func main() {
 
-	setFlags()
+	//setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
