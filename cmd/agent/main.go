@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
@@ -31,37 +32,38 @@ func init() {
 }
 
 func setFlags() {
-	//flag.Parse()
-	//
-	//if fАddr != "" {
-	//	fmt.Println("Agent set flag Addres", fАddr)
-	//	variables.Conf.Address = fАddr
-	//} else {
-	//	variables.Conf.Address = config.DefaultAddress
-	//}
-	//
-	//if fRpInterv != 0 {
-	//	fmt.Println("Agent set flag ReportInterval", fRpInterv)
-	//	variables.Conf.ReportInterval = fRpInterv
-	//
-	//} else {
-	//	variables.Conf.ReportInterval = config.DefaultReportInterval
-	//}
-	//
-	//if fPInterv != 0 {
-	//	fmt.Println("Agent set flag PollInterval", fPInterv)
-	//	variables.Conf.PollInterval = fPInterv
-	//} else {
-	//
-	//	variables.Conf.PollInterval = config.DefaultPollInterval
-	//}
+	flag.Parse()
+
+	if fАddr != "" {
+		fmt.Println("Agent set flag Addres", fАddr)
+		variables.Conf.Address = fАddr
+	} else {
+		variables.Conf.Address = config.DefaultAddress
+	}
+
+	if fRpInterv != 0 {
+		fmt.Println("Agent set flag ReportInterval", fRpInterv)
+		variables.Conf.ReportInterval = fRpInterv
+
+	} else {
+		variables.Conf.ReportInterval = config.DefaultReportInterval
+	}
+
+	if fPInterv != 0 {
+		fmt.Println("Agent set flag PollInterval", fPInterv)
+		variables.Conf.PollInterval = fPInterv
+	} else {
+
+		variables.Conf.PollInterval = config.DefaultPollInterval
+	}
 }
 
 func main() {
+
 	variables.Conf = config.New()
 	log.Println("Client started, update and report to IP ", variables.Conf.Address)
 
-	//setFlags()
+	setFlags()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if variables.ShowLog {
