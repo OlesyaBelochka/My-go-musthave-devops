@@ -63,7 +63,7 @@ func main() {
 	variables.Conf = config.New()
 	log.Println("Client started, update and report to IP ", variables.Conf.Address)
 
-	setFlags()
+	//setFlags()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if variables.ShowLog {
