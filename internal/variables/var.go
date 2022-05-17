@@ -29,7 +29,8 @@ var MemSt = new(runtime.MemStats)
 
 var MC = map[string]Counter{}
 
-var Conf *config.Config
+var ConfS *config.ConfigServer
+var ConfA *config.ConfigAgent
 
 type Metrics struct {
 	ID    string   `json:"id"`              // имя метрики

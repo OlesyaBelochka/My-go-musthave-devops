@@ -14,7 +14,7 @@ import (
 
 func saveMetricsIntoFile() {
 
-	newWriter, err := variables.NewWriter(variables.Conf.StoreFile)
+	newWriter, err := variables.NewWriter(variables.ConfS.StoreFile)
 
 	if err != nil {
 		log.Println("can't open file, error: ", err)
@@ -59,7 +59,7 @@ func saveMetricsIntoFile() {
 }
 func Start() {
 
-	timerStore := time.NewTimer(time.Duration(variables.Conf.StoreInterval) * time.Second)
+	timerStore := time.NewTimer(time.Duration(variables.ConfS.StoreInterval) * time.Second)
 
 	osSigChan := make(chan os.Signal, 4)
 	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -86,8 +86,8 @@ func Start() {
 }
 
 func RestoreMetricsFromFile() {
-	fmt.Println("StoreFile = ", variables.Conf.StoreFile)
-	readerM, err := variables.NewReader(variables.Conf.StoreFile)
+	fmt.Println("StoreFile = ", variables.ConfS.StoreFile)
+	readerM, err := variables.NewReader(variables.ConfS.StoreFile)
 	if err != nil {
 
 		log.Println("can't create NewReader from func RestoreMetricsFromFile,  error: ", err)

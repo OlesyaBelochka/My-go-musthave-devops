@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
@@ -28,55 +27,54 @@ func init() {
 	//flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
 	//flag.Int64Var(&fRpInterv, "r", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
 	//flag.Int64Var(&fPInterv, "p", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
-
+	variables.ConfA = config.NewA()
 }
 
-func setFlags() {
-	flag.Parse()
-
-	//if fАddr != "" && variables.Conf.Address =="" {
-	//	fmt.Println("Agent set flag Addres", fАddr)
-	//	variables.Conf.Address = fАddr
-	//} else {
-	//	variables.Conf.Address = config.DefaultAddress
-	//}
-
-	if variables.Conf.Address == "" {
-
-		variables.Conf.Address = config.DefaultAddress
-		if fАddr != "" {
-			variables.Conf.Address = fАddr
-		}
-	}
-
-	if fRpInterv != 0 {
-		fmt.Println("Agent set flag ReportInterval", fRpInterv)
-		variables.Conf.ReportInterval = fRpInterv
-
-	} else {
-		variables.Conf.ReportInterval = config.DefaultReportInterval
-	}
-
-	if fPInterv != 0 {
-		fmt.Println("Agent set flag PollInterval", fPInterv)
-		variables.Conf.PollInterval = fPInterv
-	} else {
-
-		variables.Conf.PollInterval = config.DefaultPollInterval
-	}
-}
+//func setFlags() {
+//	//flag.Parse()
+//
+//	//if fАddr != "" && variables.Conf.Address =="" {
+//	//	fmt.Println("Agent set flag Addres", fАddr)
+//	//	variables.Conf.Address = fАddr
+//	//} else {
+//	//	variables.Conf.Address = config.DefaultAddress
+//	//}
+//
+//	if variables.ConfA.Address == "" {
+//
+//		variables.ConfA.Address = config.DefaultAddress
+//		if fАddr != "" {
+//			variables.ConfA.Address = fАddr
+//		}
+//	}
+//
+//	if fRpInterv != 0 {
+//		fmt.Println("Agent set flag ReportInterval", fRpInterv)
+//		variables.ConfA.ReportInterval = fRpInterv
+//
+//	} else {
+//		variables.ConfA.ReportInterval = config.DefaultReportInterval
+//	}
+//
+//	if fPInterv != 0 {
+//		fmt.Println("Agent set flag PollInterval", fPInterv)
+//		variables.ConfA.PollInterval = fPInterv
+//	} else {
+//
+//		variables.ConfA.PollInterval = config.DefaultPollInterval
+//	}
+//}
 
 func main() {
 
-	variables.Conf = config.New()
-	log.Println("Client started, update and report to IP ", variables.Conf.Address)
+	log.Println("Client started, update and report to IP ", variables.ConfA.Address)
 
-	setFlags()
+	//setFlags()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if variables.ShowLog {
-		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", variables.Conf.Address, variables.Conf.ReportInterval, variables.Conf.PollInterval)
+		fmt.Printf("Address %v, ReportInterval = %v, PollInterval =  %v", variables.ConfA.Address, variables.ConfA.ReportInterval, variables.ConfA.PollInterval)
 	}
 
 	endpoint := "/update/"
@@ -86,7 +84,7 @@ func main() {
 
 	go updater.Pall(ctx)
 
-	go reporters.Report(ctx, "http://"+variables.Conf.Address+endpoint)
+	go reporters.Report(ctx, "http://"+variables.ConfA.Address+endpoint)
 
 	sigEnd := <-osSigChan
 	fmt.Println("Get signal", sigEnd)

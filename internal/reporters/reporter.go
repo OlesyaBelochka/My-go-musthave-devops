@@ -116,7 +116,7 @@ func Report(ctx context.Context, URL string) {
 	client := http.Client{}
 
 	for {
-		timerReport := time.NewTimer(time.Duration(variables.Conf.ReportInterval) * time.Second)
+		timerReport := time.NewTimer(time.Duration(variables.ConfA.ReportInterval) * time.Second)
 
 		select {
 		case <-timerReport.C:

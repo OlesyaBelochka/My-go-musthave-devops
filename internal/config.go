@@ -4,6 +4,15 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
+)
+
+var (
+	FRstor              bool
+	FStrFile            string
+	FStrInterv          time.Duration
+	FАddr               string
+	FRpInterv, FPInterv int64
 )
 
 const (
@@ -15,26 +24,57 @@ const (
 	DefaultReportInterval = 10
 )
 
-type Config struct {
+type ConfigServer struct {
+	Address       string
+	StoreInterval int64
+	StoreFile     string
+	Restore       bool
+}
+
+type ConfigAgent struct {
 	Address        string
 	PollInterval   int64
 	ReportInterval int64
-	StoreInterval  int64
-	StoreFile      string
-	Restore        bool
 }
 
 // New returns a new Config struct
 
-func New() *Config {
+func NewS() *ConfigServer {
 
-	return &Config{
+	//flag.Parse()
+
+	fmt.Println("(ConfigServer FАddr) =", FАddr)
+	if FАddr == "" {
+		FАddr = DefaultAddress
+	}
+
+	if FStrFile == "" {
+		FStrFile = DefaultStoreFile
+	}
+
+	//if FRstor != DefaultRestore {
+	//	FRstor = DefaultRestore
+	//}
+
+	if FStrInterv == 0 {
+		FStrInterv = DefaultStoreInterval
+	}
+
+	return &ConfigServer{
+		Address:       getEnv("ADDRESS", FАddr),
+		StoreInterval: getEnvAsInt("STORE_INTERVAL", int64(FStrInterv)),
+		StoreFile:     getEnv("STORE_FILE", FStrFile),
+		Restore:       getEnvAsBool("RESTORE", FRstor),
+	}
+
+}
+
+func NewA() *ConfigAgent {
+
+	return &ConfigAgent{
 		Address:        getEnv("ADDRESS", DefaultAddress),
 		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultPollInterval),
 		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
-		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
-		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
-		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
 	}
 }
 
@@ -75,14 +115,14 @@ func New() *Config {
 //}
 
 func getEnv(key string, defaultVal string) string {
+
 	if value, exists := os.LookupEnv(key); exists {
 		fmt.Println("Получили переменную окружения ", key, " в значение = ", value)
 		return value
 	}
-
-	fmt.Println("Взяли дефолтное значение переменной  окружения", key, " = ", defaultVal)
-
+	fmt.Println("Взяли дефолтное значение", key, " = ", defaultVal)
 	return defaultVal
+
 }
 
 func getEnvAsInt(name string, defaultVal int64) int64 {
@@ -91,7 +131,9 @@ func getEnvAsInt(name string, defaultVal int64) int64 {
 		return int64(value)
 	}
 
+	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
+
 }
 
 func getEnvAsBool(name string, defaultVal bool) bool {
@@ -100,5 +142,7 @@ func getEnvAsBool(name string, defaultVal bool) bool {
 		return val
 	}
 
+	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
+
 }

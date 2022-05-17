@@ -13,7 +13,7 @@ import (
 func Pall(ctx context.Context) {
 
 	for {
-		timer := time.NewTimer(time.Duration(variables.Conf.PollInterval) * time.Second)
+		timer := time.NewTimer(time.Duration(variables.ConfA.PollInterval) * time.Second)
 
 		select {
 		case <-timer.C:
