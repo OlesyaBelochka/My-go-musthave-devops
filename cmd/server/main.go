@@ -9,6 +9,7 @@ import (
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"time"
@@ -25,9 +26,9 @@ func init() {
 	//os.Setenv("ADDRESS", "127.0.0.1:8080")
 	//os.Setenv("STORE_FILE", "/tmp/devops-metrics-db.json")
 
-	//if err := godotenv.Load(); err != nil {
-	//	log.Print("No .env file found")
-	//}
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
 
 	//path, exists := os.LookupEnv("RESTORE")
 	//
@@ -42,10 +43,15 @@ func init() {
 	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
 	//flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
 	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	//
+	//flag.BoolVar(&fRstor, "r", variables.Conf.Restore, "RESTORE=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fAddr, "a", variables.Conf.Address, "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&fStrFile, "f", variables.Conf.StoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 
-	flag.BoolVar(&fRstor, "r", variables.Conf.Restore, "RESTORE=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fAddr, "a", variables.Conf.Address, "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&fStrFile, "f", variables.Conf.StoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.BoolVar(&fRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fAddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&fStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 
 	fmt.Println("Restore = ", variables.Conf.Restore)
@@ -53,108 +59,36 @@ func init() {
 }
 
 func setFlags() {
-	//
 	flag.Parse()
-	//if !fRstor {
-	//	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore, " fRstor = ", fRstor)
-	//
-	//	fmt.Println("Server set flag Restore", fRstor)
-	//
-	//	if !variables.Conf.Restore {
-	//		variables.Conf.Restore = fRstor
-	//	}
-	//
-	//}
-	//
-	//if fAddr != "" {
-	//
-	//	fmt.Println("variables.Conf.Address = ", variables.Conf.Address, " fAddr = ", fAddr)
-	//
-	//	if variables.Conf.Address == "" {
-	//		fmt.Println("Server set flag Addres", fAddr)
-	//		variables.Conf.Address = fAddr
-	//	}
-	//}
-	//
-	//if fStrFile != "" {
-	//	fmt.Println("variables.Conf.StoreFileexport = ", variables.Conf.StoreFile, " fStrFile = ", fStrFile)
-	//
-	//	if variables.Conf.StoreFile == "" {
-	//		fmt.Println("Server set flag StoreFile", fStrFile)
-	//		variables.Conf.StoreFile = fStrFile
-	//	}
-	//}
-	//
-	//if fStrInterv != 0 {
-	//	fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval, " fStrInterv = ", fStrInterv)
-	//
-	//	if variables.Conf.StoreInterval == 0 {
-	//		fmt.Println("Server set flag StoreInterval", fStrInterv)
-	//		variables.Conf.StoreInterval = int64(fStrInterv)
-	//	}
-	//}
 
-	//if !fRstor && !variables.Conf.Restore {
-	//	variables.Conf.Restore = fRstor
-	//	fmt.Println("Server set flag Restore", fRstor)
-	//} else {
-	//	variables.Conf.Restore = config.DefaultRestore
-	//}
-
-	if !variables.Conf.Restore {
-		variables.Conf.Restore = config.DefaultRestore
-
-		if fRstor {
-			variables.Conf.Restore = fRstor
-		}
+	if fRstor && variables.Conf.Restore == config.DefaultRestore {
+		fmt.Println("variables.Conf.Restore set = ", fRstor)
+		variables.Conf.Restore = fRstor
 	}
 
-	fmt.Println("variables.Conf.Restore = ", variables.Conf.Restore)
+	fmt.Println("variables.Conf.Address = ", variables.Conf.Address, "DefaultAddress = ", config.DefaultAddress, variables.Conf.Address == config.DefaultAddress)
 
-	//if fAddr != "" && variables.Conf.Address == "" {
-	//	variables.Conf.Address = fAddr
-	//	fmt.Println("Server set flag Addres", fAddr)
-	//} else {
-	//	variables.Conf.Address = config.DefaultAddress
-	//}
-
-	if variables.Conf.Address == "" {
-
-		variables.Conf.Address = config.DefaultAddress
-		if fAddr != "" {
-			variables.Conf.Address = fAddr
-		}
+	if fAddr != "" && variables.Conf.Address == config.DefaultAddress {
+		fmt.Println("variables.Conf.Address set = ", fAddr)
+		variables.Conf.Address = fAddr
 	}
 
-	fmt.Println("variables.Conf.Address = ", variables.Conf.Address)
-
-	if variables.Conf.StoreFile == "" {
-
-		variables.Conf.StoreFile = config.DefaultStoreFile
-
-		if fStrFile != "" {
-			variables.Conf.StoreFile = fStrFile
-		}
+	if fStrFile != "" && variables.Conf.StoreFile == config.DefaultStoreFile {
+		fmt.Println("Svariables.Conf StoreFile set = ", fStrFile)
+		variables.Conf.StoreFile = fStrFile
 	}
+	fmt.Println(variables.Conf.StoreInterval, config.DefaultStoreInterval, variables.Conf.StoreInterval == config.DefaultStoreInterval)
+	if fStrInterv != 0 && variables.Conf.StoreInterval == config.DefaultStoreInterval {
+		fmt.Println("variables.Conf.StoreInterval set= ", fStrInterv)
+		variables.Conf.StoreInterval = int64(fStrInterv)
 
-	fmt.Println("variables.Conf.StoreFileExport = ", variables.Conf.StoreFile)
-
-	if variables.Conf.StoreInterval == 0 {
-
-		variables.Conf.StoreInterval = config.DefaultStoreInterval
-
-		if fStrInterv != 0 {
-			variables.Conf.StoreInterval = int64(fStrInterv)
-		}
 	}
-
-	fmt.Println("variables.Conf.StoreInterval = ", variables.Conf.StoreInterval)
 
 }
 
 func main() {
 
-	//setFlags()
+	setFlags()
 
 	if variables.Conf.Restore {
 		fmt.Println("start RestoreMetricsFromFile")

@@ -80,7 +80,7 @@ func getEnv(key string, defaultVal string) string {
 		return value
 	}
 
-	fmt.Println("Взяли дефолтное значение переменной  окружения  = ", defaultVal)
+	fmt.Println("Взяли дефолтное значение переменной  окружения", key, " = ", defaultVal)
 
 	return defaultVal
 }
