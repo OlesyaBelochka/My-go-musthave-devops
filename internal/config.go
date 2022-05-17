@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -25,29 +26,41 @@ type Config struct {
 
 // New returns a new Config struct
 
-//func New() *Config {
-//
-//	return &Config{
-//		Address:        getEnv("ADDRESS", DefaultAddress),
-//		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultPollInterval),
-//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
-//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
-//		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
-//		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
-//	}
-//}
-
 func New() *Config {
 
 	return &Config{
-		Address:        getEnv("ADDRESS", ""),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
-		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-		StoreFile:      getEnv("STORE_FILE", ""),
-		Restore:        getEnvAsBool("RESTORE", false),
+		Address:        getEnv("ADDRESS", DefaultAddress),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultPollInterval),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
+		StoreInterval:  getEnvAsInt("STORE_INTERVAL", DefaultStoreInterval),
+		StoreFile:      getEnv("STORE_FILE", DefaultStoreFile),
+		Restore:        getEnvAsBool("RESTORE", DefaultRestore),
 	}
 }
+
+//func New() *Config {
+//	return &Config{
+//		Address:        getEnv("ADDRESS", ""),
+//		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
+//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
+//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
+//		StoreFile:      getEnv("STORE_FILE", ""),
+//		Restore:        getEnvAsBool("RESTORE", false),
+//	}
+//
+//}
+
+//func NewDefault() *Config {
+//
+//	return &Config{
+//		Address:        DefaultAddress,
+//		PollInterval:   DefaultPollInterval,
+//		ReportInterval: DefaultReportInterval,
+//		StoreInterval:  DefaultStoreInterval,
+//		StoreFile:      DefaultStoreFile,
+//		Restore:        DefaultRestore,
+//	}
+//}
 
 //func New() *Config {
 //
@@ -63,8 +76,11 @@ func New() *Config {
 
 func getEnv(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
+		fmt.Println("Получили переменную окружения ", key, " в значение = ", value)
 		return value
 	}
+
+	fmt.Println("Взяли дефолтное значение переменной  окружения  = ", defaultVal)
 
 	return defaultVal
 }
