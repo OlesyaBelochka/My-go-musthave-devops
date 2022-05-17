@@ -93,26 +93,33 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
 
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 		fmt.Println("(HandleGetAllMetrics)  сжимает файл чтобы отправить ответ")
-		w.Header().Add("Content-Encoding", "gzip")
-		data, err := compression.Compress([]byte(html))
 
+		data, err := compression.Compress([]byte(html))
 		if err != nil {
 			fmt.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
+
+		w.Header().Set("Content-Encoding", "gzip")
 
 		if _, err := w.Write(data); err != nil {
 			fmt.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		return
+	} else {
+		if _, err := w.Write([]byte(html)); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			fmt.Println(err)
+			return
+		}
 	}
 
-	if _, err := w.Write([]byte(html)); err != nil {
-		fmt.Println(err)
-	}
+	w.WriteHeader(http.StatusOK)
 
 }
 
