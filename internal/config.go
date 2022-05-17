@@ -70,10 +70,16 @@ func NewS() *ConfigServer {
 
 func NewA() *ConfigAgent {
 
+	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.Int64Var(&FPInterv, "p", DefaultPollInterval, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+
+	flag.Parse()
+
 	return &ConfigAgent{
-		Address:        getEnv("ADDRESS", DefaultAddress),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", DefaultPollInterval),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
+		Address:        getEnv("ADDRESS", FАddr),
+		PollInterval:   getEnvAsInt("POLL_INTERVAL", FPInterv),
+		ReportInterval: getEnvAsInt("REPORT_INTERVAL", FRpInterv),
 	}
 }
 
