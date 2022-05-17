@@ -82,7 +82,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Print("HandleGetAllMetrics")
 	}
 
-	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Content-Type", "html/text")
 
 	html := ""
 	for s, c := range variables.MG {
@@ -97,7 +97,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
+		fmt.Println("(HandleGetAllMetrics)  сжимает файл чтобы отправить ответ")
 		w.Header().Set("Content-Encoding", "gzip")
 		data, err := compression.Compress([]byte(html))
 
