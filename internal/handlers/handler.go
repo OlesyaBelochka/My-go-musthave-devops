@@ -66,6 +66,8 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Accept-Encoding", "gzip")
+
 	_, err = w.Write(strJSON)
 
 	if err != nil {
@@ -302,6 +304,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Accept-Encoding", "gzip")
 
 	_, err = w.Write(strJSON)
 
