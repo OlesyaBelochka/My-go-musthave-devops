@@ -86,21 +86,35 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 
 	html := ""
 	for s, c := range variables.MG {
-
 		html += fmt.Sprintf("%s : %.3f\n", s, c)
-
 	}
+
 	for s, c := range variables.MC {
 
 		html += fmt.Sprintf("%s : %d\n", s, c)
+
 	}
 	w.WriteHeader(http.StatusOK)
 
-	_, err := w.Write([]byte(html))
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
+		w.Header().Set("Content-Encoding", "gzip")
+		data, err := compression.Compress([]byte(html))
 
-	if err != nil {
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if _, err := w.Write(data); err != nil {
+			fmt.Println(err)
+		}
+		return
+	}
+
+	if _, err := w.Write([]byte(html)); err != nil {
 		fmt.Println(err)
 	}
+
 }
 
 func getMetric(mType, mName string, format bool) (string, int, error) {
