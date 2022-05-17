@@ -22,79 +22,17 @@ var (
 )
 
 func init() {
-	//os.Setenv("RESTORE", "true")
-	//os.Setenv("ADDRESS", "127.0.0.1:8080")
-	//os.Setenv("STORE_FILE", "/tmp/devops-metrics-db.json")
-
-	//if err := godotenv.Load(); err != nil {
-	//	log.Print("No .env file found")
-	//}
-
-	//path, exists := os.LookupEnv("RESTORE")
-	//
-	//if exists {
-	//	// Print the value of the environment variable
-	//	fmt.Println("Print the value of the environment variable", path)
-	//}
-
-	//
-	//flag.BoolVar(&fRstor, "r", false, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "f", "/tmp/devops-metrics-db.json", "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-	//
-	//flag.BoolVar(&fRstor, "r", variables.Conf.Restore, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", variables.Conf.Address, "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "f", variables.Conf.StoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
-	//flag.BoolVar(&fRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fAddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&fStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&fStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-	//
-	//fmt.Println("Restore = ", variables.ConfS.Restore)
-	//RESTORE=true
 
 	flag.BoolVar(&config.FRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&config.FАddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&config.FStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	flag.DurationVar(&config.FStrInterv, "i", 300, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
-}
-
-func setFlags() {
-
-	//fmt.Println("&config.FАddr = ", config.FАddr)
-
-	//
-	//if fRstor && variables.Conf.Restore == config.DefaultRestore {
-	//	fmt.Println("variables.Conf.Restore set = ", fRstor)
-	//	variables.Conf.Restore = fRstor
-	//}
-	//
-	//fmt.Println("variables.Conf.Address = ", variables.Conf.Address, "DefaultAddress = ", config.DefaultAddress, variables.Conf.Address == config.DefaultAddress)
-	//
-	//if fAddr != "" && variables.Conf.Address == config.DefaultAddress {
-	//	fmt.Println("variables.Conf.Address set = ", fAddr)
-	//	variables.Conf.Address = fAddr
-	//}
-	//
-	//if fStrFile != "" && variables.Conf.StoreFile == config.DefaultStoreFile {
-	//	fmt.Println("Svariables.Conf StoreFile set = ", fStrFile)
-	//	variables.Conf.StoreFile = fStrFile
-	//}
-	//fmt.Println(variables.Conf.StoreInterval, config.DefaultStoreInterval, variables.Conf.StoreInterval == config.DefaultStoreInterval)
-	//if fStrInterv != 0 && variables.Conf.StoreInterval == config.DefaultStoreInterval {
-	//	fmt.Println("variables.Conf.StoreInterval set= ", fStrInterv)
-	//	variables.Conf.StoreInterval = int64(fStrInterv)
-	//
-	//}
+	flag.DurationVar(&config.FStrInterv, "i", config.DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 
 }
 
 func main() {
 	flag.Parse()
+
 	fmt.Println("парсим флаги начало")
 	fmt.Println("config.UseFlagRstor = ", config.FRstor)
 	fmt.Println("config.FАddr = ", config.FАddr)

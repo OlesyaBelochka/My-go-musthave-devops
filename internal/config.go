@@ -17,7 +17,7 @@ var (
 
 const (
 	DefaultAddress        = "127.0.0.1:8080"
-	DefaultStoreInterval  = 300
+	DefaultStoreInterval  = time.Duration(300 * time.Second)
 	DefaultStoreFile      = "/tmp/devops-metrics-db.json"
 	DefaultRestore        = true
 	DefaultPollInterval   = 2
@@ -37,28 +37,7 @@ type ConfigAgent struct {
 	ReportInterval int64
 }
 
-// New returns a new Config struct
-
 func NewS() *ConfigServer {
-
-	//flag.Parse()
-
-	fmt.Println("(ConfigServer FАddr) =", FАddr)
-	if FАddr == "" {
-		FАddr = DefaultAddress
-	}
-
-	if FStrFile == "" {
-		FStrFile = DefaultStoreFile
-	}
-
-	//if FRstor != DefaultRestore {
-	//	FRstor = DefaultRestore
-	//}
-
-	if FStrInterv == 0 {
-		FStrInterv = DefaultStoreInterval
-	}
 
 	return &ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
@@ -77,42 +56,6 @@ func NewA() *ConfigAgent {
 		ReportInterval: getEnvAsInt("REPORT_INTERVAL", DefaultReportInterval),
 	}
 }
-
-//func New() *Config {
-//	return &Config{
-//		Address:        getEnv("ADDRESS", ""),
-//		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
-//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
-//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-//		StoreFile:      getEnv("STORE_FILE", ""),
-//		Restore:        getEnvAsBool("RESTORE", false),
-//	}
-//
-//}
-
-//func NewDefault() *Config {
-//
-//	return &Config{
-//		Address:        DefaultAddress,
-//		PollInterval:   DefaultPollInterval,
-//		ReportInterval: DefaultReportInterval,
-//		StoreInterval:  DefaultStoreInterval,
-//		StoreFile:      DefaultStoreFile,
-//		Restore:        DefaultRestore,
-//	}
-//}
-
-//func New() *Config {
-//
-//	return &Config{
-//		Address:        getEnv("ADDRESS", "127.0.0.1:8080"),
-//		PollInterval:   getEnvAsInt("POLL_INTERVAL", 2),
-//		ReportInterval: getEnvAsInt("REPORT_INTERVAL", 10),
-//		StoreInterval:  getEnvAsInt("STORE_INTERVAL", 300),
-//		StoreFile:      getEnv("STORE_FILE", "/tmp/devops-metrics-db.json"),
-//		Restore:        getEnvAsBool("RESTORE", true),
-//	}
-//}
 
 func getEnv(key string, defaultVal string) string {
 
