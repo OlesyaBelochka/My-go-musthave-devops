@@ -193,7 +193,28 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
-	//fmt.Println("star HandleGetMetric Json")
+	fmt.Println("star HandleGetMetric Json")
+
+	var (
+		//metrics         variables.Metrics
+		needCompression bool
+	)
+
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+			needCompression = true
+
+		}
+	}
+
+	if needCompression {
+
+		fmt.Print("(HandleGetMetricJSON) из агента пришли данные о том, что нужна компрессия, ", r.Header.Get("Accept-Encoding"), r.Header.Get("Content-Encoding"))
+
+	} else {
+
+		fmt.Print("(HandleGetMetricJSON) из агента пришли данные о том, что НЕ  нужна комрессия , ")
+	}
 
 	var resp variables.Metrics
 
@@ -202,6 +223,11 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	if needCompression {
+		body, err = compression.Decompress(body)
+		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
 	}
 
 	//fmt.Println("GetMetricJSON Handler: " + string(body))
@@ -249,8 +275,6 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		if variables.ShowLog {
 			fmt.Println("#подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valInt, " в HandleGetMetric Json")
 		}
-		//default:
-		//	st := http.StatusBadRequest
 
 	}
 
@@ -259,9 +283,23 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
 
-	//	fmt.Println("ответ в файле JSON: " + string(strJSON))
+	//f
+
+	if needCompression {
+
+		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
+		w.Header().Set("Content-Encoding", "gzip")
+		strJSON, err = compression.Compress(strJSON)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
+			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
+			return
+		}
+	}
+
+	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -335,7 +373,17 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 			needCompression = true
+
 		}
+	}
+
+	if needCompression {
+
+		fmt.Print("(HandleUpdateMetricsJSON) из агента пришли данные о том, что нужна компрессия, ", r.Header.Get("Accept-Encoding"), r.Header.Get("Content-Encoding"))
+
+	} else {
+
+		fmt.Print("(HandleUpdateMetricsJSON) из агента пришли данные о том, что НЕ  нужна комрессия , ")
 	}
 
 	body, err := io.ReadAll(r.Body)

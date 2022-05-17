@@ -51,12 +51,12 @@ func NewS() *ConfigServer {
 
 	flag.Parse()
 
-	fmt.Println("парсим флаги начало")
+	fmt.Println("парсим  флаги сервер начало")
 	fmt.Println("config.UseFlagRstor = ", FRstor)
 	fmt.Println("config.FАddr = ", FАddr)
 	fmt.Println("config.FStrFile = ", FStrFile)
 	fmt.Println("config.FStrInterv = ", FStrInterv)
-	fmt.Println("парсим флаги конец")
+	fmt.Println("парсим флаги сервер конец")
 
 	cnf := ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
