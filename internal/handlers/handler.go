@@ -66,11 +66,8 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Accept-Encoding", "gzip")
 
-	_, err = w.Write(strJSON)
-
-	if err != nil {
+	if _, err = w.Write(strJSON); err != nil {
 		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
 		return
 	}
@@ -202,11 +199,8 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-			needCompression = true
-
-		}
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+		needCompression = true
 	}
 
 	if needCompression {
@@ -230,6 +224,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	if needCompression {
 		body, err = compression.Decompress(body)
 		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
+
 	}
 
 	//fmt.Println("GetMetricJSON Handler: " + string(body))
@@ -288,8 +283,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 	//f
 
-	if needCompression {
-
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
 		w.Header().Set("Content-Encoding", "gzip")
 		strJSON, err = compression.Compress(strJSON)
@@ -304,7 +298,6 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Accept-Encoding", "gzip")
 
 	_, err = w.Write(strJSON)
 
@@ -373,15 +366,11 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-			needCompression = true
-
-		}
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+		needCompression = true
 	}
 
 	if needCompression {
-
 		fmt.Print("(HandleUpdateMetricsJSON) из агента пришли данные о том, что нужна компрессия, ", r.Header.Get("Accept-Encoding"), r.Header.Get("Content-Encoding"))
 
 	} else {
