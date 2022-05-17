@@ -82,7 +82,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Print("HandleGetAllMetrics")
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "text/html")
 
 	html := ""
 	for s, c := range variables.MG {
@@ -190,6 +190,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// HandleGetMetricJSON возвращает метрику в виде JSON
 func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("star HandleGetMetric Json")
