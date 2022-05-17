@@ -27,7 +27,7 @@ func init() {
 	//flag.StringVar(&fАddr, "a", "", "ADDRESS=<ЗНАЧЕНИЕ>")
 	//flag.Int64Var(&fRpInterv, "r", 10, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
 	//flag.Int64Var(&fPInterv, "p", 2, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
-	variables.ConfA = config.NewA()
+
 }
 
 //func setFlags() {
@@ -66,6 +66,8 @@ func init() {
 //}
 
 func main() {
+
+	variables.ConfA = config.NewA()
 
 	log.Println("Client started, update and report to IP ", variables.ConfA.Address)
 

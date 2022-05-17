@@ -116,8 +116,8 @@ func Report(ctx context.Context, URL string) {
 	client := http.Client{}
 
 	for {
-		timerReport := time.NewTimer(time.Duration(variables.ConfA.ReportInterval) * time.Second)
-
+		timerReport := time.NewTimer(variables.ConfA.ReportInterval)
+		fmt.Print("Запустили таймер ReportInterval ", variables.ConfA.ReportInterval)
 		select {
 		case <-timerReport.C:
 			// variables.FShowLog("sending...")

@@ -9,33 +9,32 @@ import (
 )
 
 var (
-	FRstor              bool
-	FStrFile            string
-	FStrInterv          time.Duration
-	FАddr               string
-	FRpInterv, FPInterv int64
+	FRstor                          bool
+	FStrFile                        string
+	FStrInterv, FRpInterv, FPInterv time.Duration
+	FАddr                           string
 )
 
 const (
 	DefaultAddress        = "127.0.0.1:8080"
-	DefaultStoreInterval  = time.Duration(300 * time.Second)
+	DefaultStoreInterval  = 300 * time.Second
 	DefaultStoreFile      = "/tmp/devops-metrics-db.json"
 	DefaultRestore        = true
-	DefaultPollInterval   = 2
-	DefaultReportInterval = 10
+	DefaultPollInterval   = 2 * time.Second
+	DefaultReportInterval = 10 * time.Second
 )
 
 type ConfigServer struct {
 	Address       string
-	StoreInterval int64
+	StoreInterval time.Duration
 	StoreFile     string
 	Restore       bool
 }
 
 type ConfigAgent struct {
 	Address        string
-	PollInterval   int64
-	ReportInterval int64
+	PollInterval   time.Duration
+	ReportInterval time.Duration
 }
 
 func NewS() *ConfigServer {
@@ -59,28 +58,42 @@ func NewS() *ConfigServer {
 	fmt.Println("config.FStrInterv = ", FStrInterv)
 	fmt.Println("парсим флаги конец")
 
-	return &ConfigServer{
+	cnf := ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
-		StoreInterval: getEnvAsInt("STORE_INTERVAL", int64(FStrInterv)),
+		StoreInterval: getEnvAsDur("STORE_INTERVAL", FStrInterv),
 		StoreFile:     getEnv("STORE_FILE", FStrFile),
 		Restore:       getEnvAsBool("RESTORE", FRstor),
 	}
 
+	fmt.Println(cnf)
+
+	return &cnf
 }
 
 func NewA() *ConfigAgent {
 
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
-	flag.Int64Var(&FPInterv, "p", DefaultPollInterval, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.DurationVar(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.DurationVar(&FPInterv, "p", DefaultPollInterval, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
 
 	flag.Parse()
 
-	return &ConfigAgent{
+	fmt.Println("парсим флаги агент начало")
+	fmt.Println("config.FАddr = ", FАddr)
+	fmt.Println("config.FRpInterv = ", FRpInterv)
+	fmt.Println("config.FPInterv = ", FPInterv)
+	fmt.Println("парсим флаги агент конец")
+
+	cnf := ConfigAgent{
 		Address:        getEnv("ADDRESS", FАddr),
-		PollInterval:   getEnvAsInt("POLL_INTERVAL", FPInterv),
-		ReportInterval: getEnvAsInt("REPORT_INTERVAL", FRpInterv),
+		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
+		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 	}
+
+	fmt.Println(cnf)
+
+	return &cnf
+
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -98,6 +111,18 @@ func getEnvAsInt(name string, defaultVal int64) int64 {
 	valueStr := getEnv(name, "")
 	if value, err := strconv.ParseInt(valueStr, 10, 64); err == nil {
 		return int64(value)
+	}
+
+	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
+	return defaultVal
+
+}
+
+func getEnvAsDur(name string, defaultVal time.Duration) time.Duration {
+	valueStr := getEnv(name, "")
+
+	if value, err := time.ParseDuration(valueStr); err == nil {
+		return value
 	}
 
 	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)

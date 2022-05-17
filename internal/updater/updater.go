@@ -2,6 +2,7 @@ package updater
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/rand"
 	"runtime"
@@ -13,7 +14,8 @@ import (
 func Pall(ctx context.Context) {
 
 	for {
-		timer := time.NewTimer(time.Duration(variables.ConfA.PollInterval) * time.Second)
+		fmt.Print("Запустили таймер PollInterval ", variables.ConfA.PollInterval)
+		timer := time.NewTimer(variables.ConfA.PollInterval)
 
 		select {
 		case <-timer.C:

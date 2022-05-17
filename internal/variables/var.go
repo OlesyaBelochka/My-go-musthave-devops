@@ -19,8 +19,8 @@ type Gauge float64
 type Counter int64
 
 const (
-	ShowLog     = false
-	ShowFullLog = false
+	ShowLog     = true
+	ShowFullLog = true
 )
 
 var MG = map[string]Gauge{}
