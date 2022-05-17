@@ -82,7 +82,7 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 		log.Print("HandleGetAllMetrics")
 	}
 
-	w.Header().Set("Content-Type", "html/text")
+	w.Header().Set("Content-Type", "text/html")
 
 	html := ""
 	for s, c := range variables.MG {
