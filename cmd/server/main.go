@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
@@ -21,24 +20,8 @@ var (
 	fRpInterv, fPInterv int64
 )
 
-func init() {
-
-	flag.BoolVar(&config.FRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&config.FАddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
-	flag.StringVar(&config.FStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	flag.DurationVar(&config.FStrInterv, "i", config.DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
-}
-
 func main() {
-	flag.Parse()
 
-	fmt.Println("парсим флаги начало")
-	fmt.Println("config.UseFlagRstor = ", config.FRstor)
-	fmt.Println("config.FАddr = ", config.FАddr)
-	fmt.Println("config.FStrFile = ", config.FStrFile)
-	fmt.Println("config.FStrInterv = ", config.FStrInterv)
-	fmt.Println("парсим флаги конец")
 	//setFlags()
 
 	variables.ConfS = config.NewS()

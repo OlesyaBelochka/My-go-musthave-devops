@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -38,6 +39,25 @@ type ConfigAgent struct {
 }
 
 func NewS() *ConfigServer {
+
+	//flag.BoolVar(&config.FRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&config.FАddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
+	//flag.StringVar(&config.FStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
+	//flag.DurationVar(&config.FStrInterv, "i", config.DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+
+	flag.BoolVar(&FRstor, "r", DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&FStrFile, "f", DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
+	flag.DurationVar(&FStrInterv, "i", DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+
+	flag.Parse()
+
+	fmt.Println("парсим флаги начало")
+	fmt.Println("config.UseFlagRstor = ", FRstor)
+	fmt.Println("config.FАddr = ", FАddr)
+	fmt.Println("config.FStrFile = ", FStrFile)
+	fmt.Println("config.FStrInterv = ", FStrInterv)
+	fmt.Println("парсим флаги конец")
 
 	return &ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
