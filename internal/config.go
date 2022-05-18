@@ -42,17 +42,14 @@ func NewS() *ConfigServer {
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FStrFile, "f", DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FStrInterv, "i", DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
 	flag.Parse()
 
-	cnf := ConfigServer{
+	return &ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
 		StoreInterval: getEnvAsDur("STORE_INTERVAL", FStrInterv),
 		StoreFile:     getEnv("STORE_FILE", FStrFile),
 		Restore:       getEnvAsBool("RESTORE", FRstor),
 	}
-
-	return &cnf
 }
 
 func NewA() *ConfigAgent {
@@ -60,17 +57,13 @@ func NewA() *ConfigAgent {
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FPInterv, "p", DefaultPollInterval, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
-
 	flag.Parse()
 
-	cnf := ConfigAgent{
+	return &ConfigAgent{
 		Address:        getEnv("ADDRESS", FАddr),
 		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 	}
-
-	return &cnf
-
 }
 
 func getEnv(key string, defaultVal string) string {
