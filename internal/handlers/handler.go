@@ -129,11 +129,6 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	var st int
 	var err error
 
-	//if variables.ShowLog {
-	//	fmt.Println(mName)
-	//	fmt.Println(mType)
-	//}
-
 	if mName == "" || mType == "" {
 		st = http.StatusBadRequest
 		return answer, st, err
@@ -180,9 +175,6 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		st = http.StatusBadRequest
 	}
 
-	//if variables.ShowFullLog {
-	//fmt.Println("вот такой ответ дала процедура getMetric", answer, st, err)
-	//}
 	return answer, st, err
 }
 
@@ -210,124 +202,6 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// HandleGetMetricJSON возвращает метрику в виде JSON
-func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("star HandleGetMetric Json")
-
-	var (
-		//metrics         variables.Metrics
-		needCompression bool
-	)
-
-	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		needCompression = true
-	}
-
-	if needCompression {
-
-		fmt.Print("(HandleGetMetricJSON) из агента пришли данные о том, что нужна компрессия, ", r.Header.Get("Accept-Encoding"), r.Header.Get("Content-Encoding"))
-
-	} else {
-
-		fmt.Print("(HandleGetMetricJSON) из агента пришли данные о том, что НЕ  нужна комрессия , ")
-	}
-
-	var resp variables.Metrics
-
-	body, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if needCompression {
-		body, err = compression.Decompress(body)
-		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
-
-	}
-
-	//fmt.Println("GetMetricJSON Handler: " + string(body))
-
-	err = json.Unmarshal(body, &resp)
-	if err != nil {
-		fmt.Println(w, "can't unmarshal: ", err.Error())
-		return
-	}
-
-	mType := resp.MType
-	mName := resp.ID
-
-	val, code, err := getMetric(mType, mName, false)
-
-	if err != nil {
-		fmt.Println("#mistake getMetric: ", code, err)
-		http.Error(w, err.Error(), code)
-		return
-	}
-	switch mType {
-
-	case "gauge":
-		valFl, err := strconv.ParseFloat(val, 64)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		resp.Value = &valFl
-
-		if variables.ShowLog {
-			fmt.Println("#подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valFl, " в HandleGetMetric Json")
-		}
-
-	case "counter":
-		valInt, err := strconv.ParseInt(val, 10, 64)
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		resp.Delta = &valInt
-
-		if variables.ShowLog {
-			fmt.Println("#подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", valInt, " в HandleGetMetric Json")
-		}
-
-	}
-
-	strJSON, err := json.Marshal(resp)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	//f
-
-	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
-		w.Header().Set("Content-Encoding", "gzip")
-		strJSON, err = compression.Compress(strJSON)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
-			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
-			return
-		}
-	}
-
-	fmt.Println("#GetMetricJSON Handler: "+string(body), " answer ", string(strJSON))
-
-	w.Header().Set("Content-Type", "application/json")
-
-	_, err = w.Write(strJSON)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-}
-
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 	//fmt.Println("HandleUpdateMetrics old")
 	//var a = strings.Split(r.URL.String(), "/")
@@ -335,11 +209,6 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 	mVal := chi.URLParam(r, "mValue")
-
-	if variables.ShowLog {
-		fmt.Println("получен URL ", r.URL)
-		fmt.Printf("распознали: mType=%s, mName=%s, mVal = %v", mType, mName, mVal)
-	}
 
 	if mName == "" || mVal == "" || (mType != "gauge" && mType != "counter") {
 		sendStatus(w, http.StatusNotImplemented) // 501
@@ -379,51 +248,121 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-
-	//var a = strings.Split(r.URL.String(), "/")
-	var (
-		metrics         variables.Metrics
-		needCompression bool
-	)
+func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
-		needCompression = true
-	}
-
-	if needCompression {
-		fmt.Print("(HandleUpdateMetricsJSON) из агента пришли данные о том, что нужна компрессия, ", r.Header.Get("Accept-Encoding"), r.Header.Get("Content-Encoding"))
-
-	} else {
-
-		fmt.Print("(HandleUpdateMetricsJSON) из агента пришли данные о том, что НЕ  нужна комрессия , ")
+		*needCompression = true
 	}
 
 	body, err := io.ReadAll(r.Body)
+
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	if needCompression {
+	if *needCompression {
 		body, err = compression.Decompress(body)
-		variables.PrinterErr(err, "#UpdateMetricsJSON mistake decompression: ")
+		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
+
 	}
 
-	fmt.Println("#UpdateMetricsJSON Handler: " + string(body))
-	err = json.Unmarshal(body, &metrics)
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println("can't unmarshal: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+// HandleGetMetricJSON возвращает метрику в виде JSON
+func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		resp            variables.Metrics
+		needCompression bool
+	)
+
+	readBodyJSONRequest(w, r, &resp, &needCompression)
+
+	mType := resp.MType
+	mName := resp.ID
+
+	val, code, err := getMetric(mType, mName, false)
 
 	if err != nil {
-		fmt.Println(w, "can't unmarshal: ", err.Error())
+		fmt.Println("#mistake getMetric: ", code, err)
+		http.Error(w, err.Error(), code)
+		return
 	}
+	switch mType {
+
+	case "gauge":
+		valFl, err := strconv.ParseFloat(val, 64)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp.Value = &valFl
+
+	case "counter":
+		valInt, err := strconv.ParseInt(val, 10, 64)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp.Delta = &valInt
+
+	}
+
+	strJSON, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
+		w.Header().Set("Content-Encoding", "gzip")
+		strJSON, err = compression.Compress(strJSON)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
+			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	_, err = w.Write(strJSON)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		metrics         variables.Metrics
+		needCompression bool
+	)
+
+	readBodyJSONRequest(w, r, &metrics, &needCompression)
 
 	mType := metrics.MType
 	mName := metrics.ID
+	err := ""
+	st := http.StatusNotImplemented
 
 	if mName == "" || (mType != "gauge" && mType != "counter") {
+		mType = ""
+		err = "can't find gauge or counter or empty id"
 
-		sendResponceJSON(w, http.StatusNotImplemented, false, "can't find gauge or counter or empty id") // 501
-		return
 	}
 
 	switch strings.ToLower(mType) {
@@ -432,17 +371,15 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		val := *metrics.Value
 
 		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
-		sendResponceJSON(w, http.StatusOK, needCompression, "")
+		st = http.StatusOK
 
 	case "counter":
-
 		val := *metrics.Delta
 
 		updater.UpdateCountMetric(mName, variables.Counter(val))
-		sendResponceJSON(w, http.StatusOK, needCompression, "")
-
-	default:
-		sendResponceJSON(w, http.StatusNotImplemented, needCompression, "default switch") // 501
+		st = http.StatusOK
 	}
+
+	sendResponceJSON(w, st, needCompression, err)
 
 }

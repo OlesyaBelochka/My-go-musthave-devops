@@ -5,7 +5,6 @@ import (
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
@@ -22,16 +21,14 @@ var (
 
 func main() {
 
-	//setFlags()
+	config.ConfS = config.NewS()
 
-	variables.ConfS = config.NewS()
-
-	if variables.ConfS.Restore {
+	if config.ConfS.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
 		go files.RestoreMetricsFromFile()
 	}
 
-	log.Println("Server has started, listening IP: " + variables.ConfS.Address)
+	log.Println("Server has started, listening IP: " + config.ConfS.Address)
 
 	r := chi.NewRouter()
 
@@ -55,9 +52,8 @@ func main() {
 	r.Post("/update", handlers.HandleUpdateMetricsJSON)
 	r.Post("/value", handlers.HandleGetMetricJSON)
 
-	if variables.ConfS.Address != "" {
-		http.ListenAndServe(variables.ConfS.Address, r)
-		//http.ListenAndServe("127.0.0.1:8080", r)
+	if config.ConfS.Address != "" {
+		http.ListenAndServe(config.ConfS.Address, r)
 	}
 
 }

@@ -4,124 +4,72 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
-	"log"
 	"net/http"
-	"net/url"
-	"os"
-	"strings"
 	"time"
 )
 
-func sendUpdateRequestJSON(fullPuth string, client http.Client, userData variables.Metrics) {
-
-	strJSON, err := json.Marshal(userData)
-	//variables.FShowLog(string(strJSON))
-	variables.PrinterErr(err, "")
-
-	strJSON, err = compression.Compress(strJSON)
-
-	// fmt.Println(strJSON)
-	if err != nil {
-		// вызываем останову агента и разбираемся. потом удали
-
-		variables.PrinterErr(err, "# mitake during compression:")
-		os.Exit(1)
-	}
-
-	req, err := http.NewRequest("POST", fullPuth, bytes.NewBuffer(strJSON))
-	variables.PrinterErr(err, "# mistake NewRequest : ")
-
-	req.Header.Set("Content-Type", "application/json")
-
-	req.Header.Set("Content-Encoding", "gzip")
-
-	resp, err := client.Do(req)
-	variables.PrinterErr(err, "# sending mistake :")
-	fmt.Println("клиент отправил: ", req)
-	//resp, err := http.Post(fullPuth, "application/json", bytes.NewBuffer(strJSON))
-
-	if resp != nil {
-		err = resp.Body.Close()
-		variables.PrinterErr(err, "")
-	}
-
-	//if resp.StatusCode != 200 {
-	//	_, err := io.ReadAll(resp.Body)
-	//	if err != nil {
-	//		fmt.Errorf(err.Error())
-	//		return
-	//	}
-	//	defer resp.Body.Close()
-	//	//
-	//}
-
+func reportMetrics() {
+	reportGauge()
+	reportCounter()
 }
 
-func sendUpdateRequest(fullPuth string, client http.Client) {
-
-	data := url.Values{}
-
-	req, _ := http.NewRequest(http.MethodPost, fullPuth, strings.NewReader(data.Encode()))
-	req.Header.Add("Content-Type", "text/plain")
-	resp, err := client.Do(req)
-
-	variables.PrinterErr(err, "")
-
-	defer resp.Body.Close()
-
-}
-
-func gatgerData(client http.Client, URL string) {
-
-	for k, v := range variables.MG {
-
+func reportGauge() {
+	for k, v := range storage.AgentMetrics.MG {
 		vFl := float64(v)
+
 		str := variables.Metrics{
 			ID:    k,
 			MType: "gauge",
 			Value: &vFl,
 		}
-		//sendRequest(fmt.Sprintf("%sgauge/%s/%f", URL, k, v), client)
-		if variables.ShowLog {
-			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %f", "gauge  в процедуре sendUpdateRequestJson", k, vFl)
-		}
-
-		sendUpdateRequestJSON(URL, client, str)
+		SendJSON(str)
 	}
+}
 
-	for k, v := range variables.MC {
+func reportCounter() {
+	for k, v := range storage.AgentMetrics.MC {
 		vInt := int64(v)
+
 		str := variables.Metrics{
 			ID:    k,
 			MType: "counter",
 			Delta: &vInt,
 		}
-
-		//sendRequest(fmt.Sprintf("%scounter/%s/%d", URL, k, v), client)
-
-		if variables.ShowLog {
-			log.Printf("отправляем метрику,  тип: %s , имя: %s, значение: %v", "counter", k, vInt)
-		}
-
-		sendUpdateRequestJSON(URL, client, str)
-		variables.MC["PollCount"] = 0 // обнуляем?
+		SendJSON(str)
 	}
 }
 
-func Report(ctx context.Context, URL string) {
+func SendJSON(userData variables.Metrics) {
+	strJSON, err := json.Marshal(userData)
+	variables.PrinterErr(err, "")
+	strJSON, err = compression.Compress(strJSON)
+	variables.PrinterErr(err, "# mitake during compression:")
 
-	client := http.Client{}
+	req, err := http.NewRequest("POST", "http://"+internal.ConfA.Address+internal.EndpointAgent, bytes.NewBuffer(strJSON))
+	variables.PrinterErr(err, "# mistake NewRequest : ")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Encoding", "gzip")
+
+	resp, err := internal.Client.Do(req)
+	variables.PrinterErr(err, "# sending mistake :")
+	if resp != nil {
+		err = resp.Body.Close()
+		variables.PrinterErr(err, "")
+	}
+}
+
+func ReportAgent(ctx context.Context) {
 
 	for {
-		timerReport := time.NewTimer(variables.ConfA.ReportInterval)
-		fmt.Print("Запустили таймер ReportInterval ", variables.ConfA.ReportInterval)
+		timerReport := time.NewTimer(internal.ConfA.ReportInterval)
 		select {
 		case <-timerReport.C:
-			// variables.FShowLog("sending...")
-			gatgerData(client, URL)
+			variables.FShowLog("#reporting..")
+			reportMetrics()
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done(): Report")
 			return

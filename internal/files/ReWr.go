@@ -2,6 +2,7 @@ package files
 
 import (
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"io"
@@ -14,7 +15,7 @@ import (
 
 func saveMetricsIntoFile() {
 
-	newWriter, err := variables.NewWriter(variables.ConfS.StoreFile)
+	newWriter, err := variables.NewWriter(internal.ConfS.StoreFile)
 
 	if err != nil {
 		log.Println("can't open file, error: ", err)
@@ -57,9 +58,10 @@ func saveMetricsIntoFile() {
 	}
 
 }
+
 func Start() {
 
-	timerStore := time.NewTimer(time.Duration(variables.ConfS.StoreInterval) * time.Second)
+	timerStore := time.NewTimer(time.Duration(internal.ConfS.StoreInterval) * time.Second)
 
 	osSigChan := make(chan os.Signal, 4)
 	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -86,8 +88,8 @@ func Start() {
 }
 
 func RestoreMetricsFromFile() {
-	fmt.Println("StoreFile = ", variables.ConfS.StoreFile)
-	readerM, err := variables.NewReader(variables.ConfS.StoreFile)
+	fmt.Println("StoreFile = ", internal.ConfS.StoreFile)
+	readerM, err := variables.NewReader(internal.ConfS.StoreFile)
 	if err != nil {
 
 		log.Println("can't create NewReader from func RestoreMetricsFromFile,  error: ", err)

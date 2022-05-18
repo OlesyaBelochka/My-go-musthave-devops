@@ -3,6 +3,7 @@ package internal
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -13,6 +14,7 @@ var (
 	FStrFile                        string
 	FStrInterv, FRpInterv, FPInterv time.Duration
 	FАddr                           string
+	EndpointAgent                   string
 )
 
 const (
@@ -22,6 +24,12 @@ const (
 	DefaultRestore        = true
 	DefaultPollInterval   = 2 * time.Second
 	DefaultReportInterval = 10 * time.Second
+)
+
+var (
+	ConfA  *ConfigAgent
+	ConfS  *ConfigServer
+	Client http.Client
 )
 
 type ConfigServer struct {

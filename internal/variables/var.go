@@ -3,17 +3,10 @@ package variables
 import (
 	"encoding/json"
 	"fmt"
-	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"os"
 	"runtime"
 	"time"
 )
-
-//const (
-//	ReportInterval = 10
-//	Address        = "127.0.0.1:8080"
-//	PollInterval   = 2
-//)
 
 type Gauge float64
 type Counter int64
@@ -28,9 +21,6 @@ var MG = map[string]Gauge{}
 var MemSt = new(runtime.MemStats)
 
 var MC = map[string]Counter{}
-
-var ConfS *config.ConfigServer
-var ConfA *config.ConfigAgent
 
 type Metrics struct {
 	ID    string   `json:"id"`              // имя метрики
