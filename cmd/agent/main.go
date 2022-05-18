@@ -22,7 +22,6 @@ var (
 func main() {
 	config.Client = http.Client{}
 	config.ConfA = config.NewA()
-
 	log.Println("Client started, update and report to IP ", config.ConfA.Address)
 	ctx, cancel := context.WithCancel(context.Background())
 	if variables.ShowLog {
