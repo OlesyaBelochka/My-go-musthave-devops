@@ -2,7 +2,6 @@ package internal
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -39,11 +38,6 @@ type ConfigAgent struct {
 
 func NewS() *ConfigServer {
 
-	//flag.BoolVar(&config.FRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&config.FАddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&config.FStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&config.FStrInterv, "i", config.DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
 	flag.BoolVar(&FRstor, "r", DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FStrFile, "f", DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
@@ -51,21 +45,12 @@ func NewS() *ConfigServer {
 
 	flag.Parse()
 
-	fmt.Println("парсим  флаги сервер начало")
-	fmt.Println("config.UseFlagRstor = ", FRstor)
-	fmt.Println("config.FАddr = ", FАddr)
-	fmt.Println("config.FStrFile = ", FStrFile)
-	fmt.Println("config.FStrInterv = ", FStrInterv)
-	fmt.Println("парсим флаги сервер конец")
-
 	cnf := ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
 		StoreInterval: getEnvAsDur("STORE_INTERVAL", FStrInterv),
 		StoreFile:     getEnv("STORE_FILE", FStrFile),
 		Restore:       getEnvAsBool("RESTORE", FRstor),
 	}
-
-	fmt.Println(cnf)
 
 	return &cnf
 }
@@ -78,19 +63,11 @@ func NewA() *ConfigAgent {
 
 	flag.Parse()
 
-	fmt.Println("парсим флаги агент начало")
-	fmt.Println("config.FАddr = ", FАddr)
-	fmt.Println("config.FRpInterv = ", FRpInterv)
-	fmt.Println("config.FPInterv = ", FPInterv)
-	fmt.Println("парсим флаги агент конец")
-
 	cnf := ConfigAgent{
 		Address:        getEnv("ADDRESS", FАddr),
 		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 	}
-
-	fmt.Println(cnf)
 
 	return &cnf
 
@@ -99,10 +76,10 @@ func NewA() *ConfigAgent {
 func getEnv(key string, defaultVal string) string {
 
 	if value, exists := os.LookupEnv(key); exists {
-		fmt.Println("Получили переменную окружения ", key, " в значение = ", value)
+		//fmt.Println("Получили переменную окружения ", key, " в значение = ", value)
 		return value
 	}
-	fmt.Println("Взяли дефолтное значение", key, " = ", defaultVal)
+	//fmt.Println("Взяли дефолтное значение", key, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -113,7 +90,7 @@ func getEnvAsInt(name string, defaultVal int64) int64 {
 		return int64(value)
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
+	//	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -125,7 +102,7 @@ func getEnvAsDur(name string, defaultVal time.Duration) time.Duration {
 		return value
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
+	//	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -136,7 +113,7 @@ func getEnvAsBool(name string, defaultVal bool) bool {
 		return val
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
+	//fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
