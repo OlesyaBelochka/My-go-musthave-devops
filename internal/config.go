@@ -47,24 +47,12 @@ type ConfigAgent struct {
 
 func NewS() *ConfigServer {
 
-	//flag.BoolVar(&config.FRstor, "r", config.DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&config.FАddr, "a", config.DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
-	//flag.StringVar(&config.FStrFile, "f", config.DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
-	//flag.DurationVar(&config.FStrInterv, "i", config.DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
-
 	flag.BoolVar(&FRstor, "r", DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FStrFile, "f", DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FStrInterv, "i", DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
 
 	flag.Parse()
-
-	fmt.Println("парсим  флаги сервер начало")
-	fmt.Println("config.UseFlagRstor = ", FRstor)
-	fmt.Println("config.FАddr = ", FАddr)
-	fmt.Println("config.FStrFile = ", FStrFile)
-	fmt.Println("config.FStrInterv = ", FStrInterv)
-	fmt.Println("парсим флаги сервер конец")
 
 	cnf := ConfigServer{
 		Address:       getEnv("ADDRESS", FАddr),
@@ -86,21 +74,11 @@ func NewA() *ConfigAgent {
 
 	flag.Parse()
 
-	fmt.Println("парсим флаги агент начало")
-	fmt.Println("config.FАddr = ", FАddr)
-	fmt.Println("config.FRpInterv = ", FRpInterv)
-	fmt.Println("config.FPInterv = ", FPInterv)
-	fmt.Println("парсим флаги агент конец")
-
-	cnf := ConfigAgent{
+	return &ConfigAgent{
 		Address:        getEnv("ADDRESS", FАddr),
 		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 	}
-
-	fmt.Println(cnf)
-
-	return &cnf
 
 }
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
 	"io"
 	"log"
 	"net/http"
@@ -203,8 +202,6 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("HandleUpdateMetrics old")
-	//var a = strings.Split(r.URL.String(), "/")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
@@ -225,7 +222,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
+		UpdateGaugeMetric(mName, variables.Gauge(val))
 
 		sendStatus(w, http.StatusOK)
 
@@ -238,7 +235,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		updater.UpdateCountMetric(mName, variables.Counter(val))
+		UpdateCountMetric(mName, variables.Counter(val))
 
 		sendStatus(w, http.StatusOK)
 
@@ -370,16 +367,27 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	case "gauge":
 		val := *metrics.Value
 
-		updater.UpdateGaugeMetric(mName, variables.Gauge(val))
+		UpdateGaugeMetric(mName, variables.Gauge(val))
 		st = http.StatusOK
 
 	case "counter":
 		val := *metrics.Delta
 
-		updater.UpdateCountMetric(mName, variables.Counter(val))
+		UpdateCountMetric(mName, variables.Counter(val))
 		st = http.StatusOK
 	}
 
 	sendResponceJSON(w, st, needCompression, err)
 
+}
+
+func UpdateGaugeMetric(name string, val variables.Gauge) {
+
+	variables.MG[name] = val
+
+}
+
+func UpdateCountMetric(name string, val variables.Counter) {
+
+	variables.MC[name] += val
 }

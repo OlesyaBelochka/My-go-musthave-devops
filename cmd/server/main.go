@@ -5,19 +5,20 @@ import (
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
-	"time"
 )
 
-var (
-	fRstor              bool
-	fAddr, fStrFile     string
-	fStrInterv          time.Duration
-	fRpInterv, fPInterv int64
-)
+func init() {
+	//loads values from .env into the system
+	//if err := godotenv.Load(); err != nil {
+	//	log.Print("No .env file found")
+	//}
+
+}
 
 func main() {
 
@@ -34,11 +35,6 @@ func main() {
 
 	go files.Start()
 	// зададим встроенные middleware, чтобы улучшить стабильность приложения
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	//if variables.ShowLog {
-	//	r.Use(middleware.Logger)
-	//}
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
@@ -53,7 +49,8 @@ func main() {
 	r.Post("/value", handlers.HandleGetMetricJSON)
 
 	if config.ConfS.Address != "" {
-		http.ListenAndServe(config.ConfS.Address, r)
+		err := http.ListenAndServe(config.ConfS.Address, r)
+		variables.PrinterErr(err, "Error server's listetning")
 	}
 
 }
