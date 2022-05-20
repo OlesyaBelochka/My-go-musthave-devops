@@ -3,7 +3,7 @@ package files
 import (
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/updater"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"io"
 	"log"
@@ -113,11 +113,11 @@ func RestoreMetricsFromFile() {
 
 		case "gauge":
 
-			updater.UpdateGaugeMetric(readedData.ID, variables.Gauge(*readedData.Value))
+			handlers.UpdateGaugeMetric(readedData.ID, variables.Gauge(*readedData.Value))
 
 		case "counter":
 
-			updater.UpdateCountMetric(readedData.ID, variables.Counter(*readedData.Delta))
+			handlers.UpdateCountMetric(readedData.ID, variables.Counter(*readedData.Delta))
 
 		}
 	}
