@@ -12,41 +12,48 @@ type (
 	MGauge   map[string]variables.Gauge
 )
 
-type MemoryStorage struct {
-	MC MCounter
-	MG MGauge
+type CounterMemoryStorage struct {
+	M MCounter
 }
 
-func New() *MemoryStorage {
-	return &MemoryStorage{
-		MC: MCounter{},
-		MG: MGauge{},
+type GaugeMemoryStorage struct {
+	M MGauge
+}
+
+func NewCounterMS() *CounterMemoryStorage {
+	return &CounterMemoryStorage{
+		M: MCounter{},
 	}
-
 }
 
-func (M MGauge) Set(name string, val []byte) {
+func NewGaugeMS() *GaugeMemoryStorage {
+	return &GaugeMemoryStorage{
+		M: MGauge{},
+	}
+}
+
+func (M GaugeMemoryStorage) Set(name string, val []byte) {
 	byteToFloat, _ := strconv.ParseFloat(string(val), 64)
-	M[name] = variables.Gauge(byteToFloat)
+	M.M[name] = variables.Gauge(byteToFloat)
 	//fmt.Printf("Set Gauge %s, in val = %f \n", name, byteToFloat)
 }
 
-func (M MCounter) Set(name string, val []byte) {
+func (M CounterMemoryStorage) Set(name string, val []byte) {
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
-	M[name] += variables.Counter(byteToInt)
+	M.M[name] += variables.Counter(byteToInt)
 	//fmt.Printf("Set Counter %s, in val = %d \n", name, M[name])
 }
 
-func (M MGauge) Get(s string, val []byte) {
+func (M GaugeMemoryStorage) Get(s string, val []byte) {
 	//TODO implement me
 	//	panic("implement me")
 }
-func (M MCounter) Get(s string, val []byte) {
+func (M CounterMemoryStorage) Get(s string, val []byte) {
 	//TODO implement me
 	//panic("implement me")
 }
 
-func (M MGauge) Pall(st *runtime.MemStats) {
+func (M GaugeMemoryStorage) Pall(st *runtime.MemStats) {
 	runtime.ReadMemStats(variables.MemSt)
 
 	M.Set("Alloc", []byte(strconv.FormatFloat(float64(st.Alloc), 'f', -1, 64)))
@@ -80,7 +87,7 @@ func (M MGauge) Pall(st *runtime.MemStats) {
 
 }
 
-func (M MCounter) Pall(st *runtime.MemStats) {
+func (M CounterMemoryStorage) Pall(st *runtime.MemStats) {
 
 	M.Set("PollCount", []byte(strconv.FormatInt(int64(1), 10)))
 }

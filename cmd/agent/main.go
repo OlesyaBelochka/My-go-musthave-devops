@@ -32,8 +32,10 @@ func main() {
 		fmt.Printf("Address %s, ReportInterval = %d, PollInterval =  %d \n", config.ConfA.Address, config.ConfA.ReportInterval, config.ConfA.PollInterval)
 	}
 	config.EndpointAgent = "/update/"
+
 	go poller.PallStart(ctx)
-	go reporters.ReportAgent(ctx)
+	//go reporters.ReportAgent(ctx)
+	go reporters.ReportAgentNew(ctx)
 
 	osSigChan := make(chan os.Signal, 1)
 	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

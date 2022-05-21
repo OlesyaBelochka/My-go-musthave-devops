@@ -12,32 +12,67 @@ import (
 	"time"
 )
 
-func reportMetrics() {
-	reportGauge()
-	reportCounter()
+type ReporterInterface interface {
+	Report()
 }
 
-func reportGauge() {
-	for k, v := range storage.AgentMetrics.MG {
-		vFl := float64(v)
+type gaugeM struct {
+	name string
+	val  float64
+}
+
+type counterM struct {
+	name string
+	val  int64
+}
+
+type GaugeReporter struct {
+	M []gaugeM
+}
+
+type CounterReporter struct {
+	M []counterM
+}
+
+func NewGaugeReporter() *GaugeReporter {
+	g := make([]gaugeM, 0)
+	for k, v := range storage.MG.M {
+		gM := gaugeM{name: k, val: float64(v)}
+		g = append(g, gM)
+	}
+	return &GaugeReporter{M: g}
+}
+
+func NewCounterReporter() *CounterReporter {
+
+	g := make([]counterM, 0)
+
+	for k, v := range storage.MC.M {
+		gC := counterM{name: k, val: int64(v)}
+		g = append(g, gC)
+	}
+
+	return &CounterReporter{M: g}
+}
+
+func (g GaugeReporter) Report() {
+	for _, v := range g.M {
 
 		str := variables.Metrics{
-			ID:    k,
+			ID:    v.name,
 			MType: "gauge",
-			Value: &vFl,
+			Value: &v.val,
 		}
 		SendJSON(str)
 	}
 }
 
-func reportCounter() {
-	for k, v := range storage.AgentMetrics.MC {
-		vInt := int64(v)
-
+func (g CounterReporter) Report() {
+	for _, v := range g.M {
 		str := variables.Metrics{
-			ID:    k,
+			ID:    v.name,
 			MType: "counter",
-			Delta: &vInt,
+			Delta: &v.val,
 		}
 		SendJSON(str)
 	}
@@ -62,14 +97,24 @@ func SendJSON(userData variables.Metrics) {
 	}
 }
 
-func ReportAgent(ctx context.Context) {
+func ReportAgentNew(ctx context.Context) {
 
 	for {
 		timerReport := time.NewTimer(internal.ConfA.ReportInterval)
 		select {
 		case <-timerReport.C:
+			gR := NewGaugeReporter()
+			cR := NewCounterReporter()
+
+			var reporters []ReporterInterface
+			rep := append(reporters, gR, cR)
+
+			for _, reporterInterface := range rep {
+				reporterInterface.Report()
+			}
+
 			variables.FShowLog("#reporting..")
-			reportMetrics()
+			//		reportMetrics()
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done(): Report")
 			return

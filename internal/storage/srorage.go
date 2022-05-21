@@ -12,12 +12,10 @@ type Storage interface {
 	Pall(st *runtime.MemStats)
 }
 
-var AgentMetrics = inmemory.New()
-var ServerMetrics = inmemory.New()
+var MG = inmemory.NewGaugeMS()
+var MC = inmemory.NewCounterMS()
 
 func PallMetrics(ch Storage) {
-
 	runtime.ReadMemStats(variables.MemSt)
 	ch.Pall(variables.MemSt)
-
 }

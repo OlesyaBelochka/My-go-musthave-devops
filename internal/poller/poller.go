@@ -14,8 +14,9 @@ func PallStart(ctx context.Context) {
 		select {
 		case <-timer.C:
 			variables.FShowLog("#update..")
-			storage.PallMetrics(storage.AgentMetrics.MG)
-			storage.PallMetrics(storage.AgentMetrics.MC)
+
+			storage.PallMetrics(storage.MG)
+			storage.PallMetrics(storage.MC)
 
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done()")
