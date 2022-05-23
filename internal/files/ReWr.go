@@ -3,12 +3,13 @@ package files
 import (
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"io"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -76,15 +77,10 @@ func Start() {
 		case <-osSigChan:
 			log.Println("Break signal,  open file to write")
 			saveMetricsIntoFile()
-
 			os.Exit(1)
-
 			return
-
 		}
-
 	}
-
 }
 
 func RestoreMetricsFromFile() {
@@ -113,11 +109,11 @@ func RestoreMetricsFromFile() {
 
 		case "gauge":
 
-			handlers.UpdateGaugeMetric(readedData.ID, variables.Gauge(*readedData.Value))
+			storage.MGServer.Set(readedData.ID, []byte(strconv.FormatFloat(float64(*readedData.Value), 'f', -1, 64)))
 
 		case "counter":
 
-			handlers.UpdateCountMetric(readedData.ID, variables.Counter(*readedData.Delta))
+			storage.MGServer.Set(readedData.ID, []byte(strconv.FormatInt(int64(*readedData.Delta), 10)))
 
 		}
 	}

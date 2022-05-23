@@ -13,7 +13,7 @@ var (
 	FRstor                          bool
 	FStrFile                        string
 	FStrInterv, FRpInterv, FPInterv time.Duration
-	FАddr                           string
+	FАddr, FKey, FDb                string
 	EndpointAgent                   string
 )
 
@@ -24,6 +24,8 @@ const (
 	DefaultRestore        = true
 	DefaultPollInterval   = 2 * time.Second
 	DefaultReportInterval = 10 * time.Second
+	DefaultKey            = ""
+	DefaultDB             = "" //host=localhost dbname=ya_pr_devops
 )
 
 var (
@@ -37,12 +39,15 @@ type ConfigServer struct {
 	StoreInterval time.Duration
 	StoreFile     string
 	Restore       bool
+	Key           string
+	DatabaseURL   string
 }
 
 type ConfigAgent struct {
 	Address        string
 	PollInterval   time.Duration
 	ReportInterval time.Duration
+	Key            string
 }
 
 func NewS() *ConfigServer {
@@ -51,6 +56,8 @@ func NewS() *ConfigServer {
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FStrFile, "f", DefaultStoreFile, "STORE_FILE=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FStrInterv, "i", DefaultStoreInterval, "STORE_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&FKey, "k", DefaultKey, "k=<КЛЮЧ>")
+	flag.StringVar(&FDb, "d", DefaultDB, "путь к базе данных")
 
 	flag.Parse()
 
@@ -59,6 +66,8 @@ func NewS() *ConfigServer {
 		StoreInterval: getEnvAsDur("STORE_INTERVAL", FStrInterv),
 		StoreFile:     getEnv("STORE_FILE", FStrFile),
 		Restore:       getEnvAsBool("RESTORE", FRstor),
+		Key:           getEnv("KEY", FKey),
+		DatabaseURL:   getEnv("DATABASE_DSN", FDb),
 	}
 
 	fmt.Println(cnf)
@@ -71,6 +80,7 @@ func NewA() *ConfigAgent {
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FPInterv, "p", DefaultPollInterval, "POLL_INTERVAL=<ЗНАЧЕНИЕ>")
+	flag.StringVar(&FKey, "k", DefaultKey, "k=<КЛЮЧ>")
 
 	flag.Parse()
 
@@ -78,6 +88,7 @@ func NewA() *ConfigAgent {
 		Address:        getEnv("ADDRESS", FАddr),
 		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
+		Key:            getEnv("KEY", FKey),
 	}
 
 }

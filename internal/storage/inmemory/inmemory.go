@@ -26,12 +26,6 @@ func NewCounterMS() *CounterMemoryStorage {
 	}
 }
 
-func NewGaugeMS() *GaugeMemoryStorage {
-	return &GaugeMemoryStorage{
-		M: MGauge{},
-	}
-}
-
 func (M GaugeMemoryStorage) Set(name string, val []byte) {
 	byteToFloat, _ := strconv.ParseFloat(string(val), 64)
 	M.M[name] = variables.Gauge(byteToFloat)
@@ -90,4 +84,10 @@ func (M GaugeMemoryStorage) Pall(st *runtime.MemStats) {
 func (M CounterMemoryStorage) Pall(st *runtime.MemStats) {
 
 	M.Set("PollCount", []byte(strconv.FormatInt(int64(1), 10)))
+}
+
+func NewGaugeMS() *GaugeMemoryStorage {
+	return &GaugeMemoryStorage{
+		M: MGauge{},
+	}
 }

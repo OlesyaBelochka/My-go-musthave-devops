@@ -13,10 +13,11 @@ func PallStart(ctx context.Context) {
 		timer := time.NewTimer(internal.ConfA.PollInterval)
 		select {
 		case <-timer.C:
+
 			variables.FShowLog("#update..")
 
-			storage.PallMetrics(storage.MG)
-			storage.PallMetrics(storage.MC)
+			storage.PallMetrics(storage.MGAgent)
+			storage.PallMetrics(storage.MCAgent)
 
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done()")

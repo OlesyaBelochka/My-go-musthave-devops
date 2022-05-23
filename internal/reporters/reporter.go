@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/Prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
@@ -13,7 +15,7 @@ import (
 )
 
 type ReporterInterface interface {
-	Report()
+	Report(key string)
 }
 
 type gaugeM struct {
@@ -35,8 +37,10 @@ type CounterReporter struct {
 }
 
 func NewGaugeReporter() *GaugeReporter {
+
 	g := make([]gaugeM, 0)
-	for k, v := range storage.MG.M {
+	for k, v := range storage.MGAgent.M {
+
 		gM := gaugeM{name: k, val: float64(v)}
 		g = append(g, gM)
 	}
@@ -47,32 +51,35 @@ func NewCounterReporter() *CounterReporter {
 
 	g := make([]counterM, 0)
 
-	for k, v := range storage.MC.M {
+	for k, v := range storage.MCAgent.M {
 		gC := counterM{name: k, val: int64(v)}
 		g = append(g, gC)
+
 	}
 
 	return &CounterReporter{M: g}
 }
 
-func (g GaugeReporter) Report() {
+func (g GaugeReporter) Report(key string) {
 	for _, v := range g.M {
 
 		str := variables.Metrics{
 			ID:    v.name,
 			MType: "gauge",
 			Value: &v.val,
+			Hash:  prhash.Hash(fmt.Sprintf("%s:gauge:%f", v.name, v.val), key),
 		}
 		SendJSON(str)
 	}
 }
 
-func (g CounterReporter) Report() {
+func (g CounterReporter) Report(key string) {
 	for _, v := range g.M {
 		str := variables.Metrics{
 			ID:    v.name,
 			MType: "counter",
 			Delta: &v.val,
+			Hash:  prhash.Hash(fmt.Sprintf("%s:counter:%d", v.name, v.val), key),
 		}
 		SendJSON(str)
 	}
@@ -97,7 +104,7 @@ func SendJSON(userData variables.Metrics) {
 	}
 }
 
-func ReportAgentNew(ctx context.Context) {
+func ReportAgentNew(ctx context.Context, key string) {
 
 	for {
 		timerReport := time.NewTimer(internal.ConfA.ReportInterval)
@@ -110,7 +117,7 @@ func ReportAgentNew(ctx context.Context) {
 			rep := append(reporters, gR, cR)
 
 			for _, reporterInterface := range rep {
-				reporterInterface.Report()
+				reporterInterface.Report(key)
 			}
 
 			variables.FShowLog("#reporting..")

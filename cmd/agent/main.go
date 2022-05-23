@@ -34,8 +34,7 @@ func main() {
 	config.EndpointAgent = "/update/"
 
 	go poller.PallStart(ctx)
-	//go reporters.ReportAgent(ctx)
-	go reporters.ReportAgentNew(ctx)
+	go reporters.ReportAgentNew(ctx, config.ConfA.Key)
 
 	osSigChan := make(chan os.Signal, 1)
 	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

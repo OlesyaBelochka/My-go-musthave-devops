@@ -2,8 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/connection"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"io"
 	"log"
 	"net/http"
@@ -25,7 +30,7 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 }
 
-func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e string) {
+func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e error, h bool) {
 	resp := variables.ServResponses{}
 
 	if status == http.StatusOK {
@@ -37,7 +42,7 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 	} else {
 		resp = variables.ServResponses{
 			Result: "Unsuccesfully",
-			Error:  e,
+			Error:  e.Error(),
 		}
 	}
 
@@ -67,7 +72,7 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 	w.Header().Set("Content-Type", "application/json")
 
 	if _, err = w.Write(strJSON); err != nil {
-		variables.PrinterErr(err, "HandleUpdateMetricsJSON"+"- Send error")
+		variables.PrinterErr(err, ""+"- Send error")
 		return
 	}
 
@@ -222,7 +227,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		UpdateGaugeMetric(mName, variables.Gauge(val))
+		storage.MGServer.Set(mName, []byte(strconv.FormatFloat(float64(val), 'f', -1, 64)))
 
 		sendStatus(w, http.StatusOK)
 
@@ -235,7 +240,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		UpdateCountMetric(mName, variables.Counter(val))
+		storage.MGServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
 
 		sendStatus(w, http.StatusOK)
 
@@ -245,7 +250,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool) {
+func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool) (int, error, bool) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		*needCompression = true
@@ -255,7 +260,7 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return http.StatusInternalServerError, err, false
 	}
 
 	if *needCompression {
@@ -268,8 +273,31 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	if err != nil {
 		fmt.Println("can't unmarshal: ", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+
+		return http.StatusInternalServerError, err, false
 	}
+
+	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
+	// то отправляем лесом
+	var isHash bool
+	if resp.Hash != "" {
+
+		getSHash := ""
+		if resp.MType == "gauge" {
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, resp.Value), config.ConfS.Key)
+
+		} else {
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, resp.Delta), config.ConfS.Key)
+		}
+
+		if getSHash != resp.Hash {
+			return http.StatusBadRequest, errors.New("Хеши не равны"), false
+		}
+		isHash = true
+
+	}
+
+	return http.StatusOK, nil, isHash
 
 }
 
@@ -281,7 +309,15 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	readBodyJSONRequest(w, r, &resp, &needCompression)
+	st, err, isHash := readBodyJSONRequest(w, r, &resp, &needCompression)
+
+	if err != nil {
+		// это значит что мы по какой-то причине не смогли выполнить процедуру выше и отправляем статус
+		sendStatus(w, st) // 400
+		return
+	}
+
+	fmt.Println(isHash)
 
 	mType := resp.MType
 	mName := resp.ID
@@ -293,6 +329,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), code)
 		return
 	}
+
 	switch mType {
 
 	case "gauge":
@@ -349,45 +386,48 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	readBodyJSONRequest(w, r, &metrics, &needCompression)
+	st, err, isHash := readBodyJSONRequest(w, r, &metrics, &needCompression)
 
-	mType := metrics.MType
-	mName := metrics.ID
-	err := ""
-	st := http.StatusNotImplemented
+	if err == nil {
 
-	if mName == "" || (mType != "gauge" && mType != "counter") {
-		mType = ""
-		err = "can't find gauge or counter or empty id"
+		mType := metrics.MType
+		mName := metrics.ID
 
+		if mName == "" || (mType != "gauge" && mType != "counter") {
+			mType = ""
+			err = errors.New("can't find gauge or counter or empty id")
+			st = http.StatusNotImplemented
+		}
+
+		switch strings.ToLower(mType) {
+
+		case "gauge":
+			val := *metrics.Value
+
+			storage.MGServer.Set(mName, []byte(strconv.FormatFloat(float64(val), 'f', -1, 64)))
+
+			st = http.StatusOK
+
+		case "counter":
+			val := *metrics.Delta
+
+			storage.MGServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
+
+			st = http.StatusOK
+		}
 	}
 
-	switch strings.ToLower(mType) {
-
-	case "gauge":
-		val := *metrics.Value
-
-		UpdateGaugeMetric(mName, variables.Gauge(val))
-		st = http.StatusOK
-
-	case "counter":
-		val := *metrics.Delta
-
-		UpdateCountMetric(mName, variables.Counter(val))
-		st = http.StatusOK
-	}
-
-	sendResponceJSON(w, st, needCompression, err)
+	sendResponceJSON(w, st, needCompression, err, isHash)
 
 }
 
-func UpdateGaugeMetric(name string, val variables.Gauge) {
+func HandlePingDb(w http.ResponseWriter, r *http.Request) {
 
-	variables.MG[name] = val
+	err := connection.Start(config.ConfS)
+	if err != nil {
+		fmt.Println(err)
+		sendStatus(w, http.StatusInternalServerError)
+	}
+	sendStatus(w, http.StatusOK)
 
-}
-
-func UpdateCountMetric(name string, val variables.Counter) {
-
-	variables.MC[name] += val
 }
