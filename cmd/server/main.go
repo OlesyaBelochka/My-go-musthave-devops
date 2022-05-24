@@ -54,7 +54,7 @@ func main() {
 		r.Get("/{mType}/{mName}", handlers.HandleGetMetric)
 
 	})
-	r.Get("/ping", handlers.HandlePingDb)
+	r.Get("/ping", handlers.HandlePingDB)
 
 	r.Post("/update/{mType}/{mName}/{mValue}", handlers.HandleUpdateMetrics)
 	r.Post("/update", handlers.HandleUpdateMetricsJSON)

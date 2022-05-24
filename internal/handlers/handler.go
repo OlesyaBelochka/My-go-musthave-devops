@@ -208,6 +208,7 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("HandleUpdateMetrics old")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
@@ -381,7 +382,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Println("HandleUpdateMetricsJSON")
 	var (
 		metrics         variables.Metrics
 		needCompression bool
@@ -422,7 +423,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func HandlePingDb(w http.ResponseWriter, r *http.Request) {
+func HandlePingDB(w http.ResponseWriter, r *http.Request) {
 
 	err := connection.Start(config.ConfS)
 	if err != nil {
