@@ -8,7 +8,7 @@ import (
 
 type Storage interface {
 	Set(s string, val []byte)
-	Get(s string, val []byte)
+	Get(s string) ([]byte, bool)
 	Pall(st *runtime.MemStats)
 }
 

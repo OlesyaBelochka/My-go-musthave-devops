@@ -141,14 +141,15 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 	switch strings.ToLower(mType) {
 	case "gauge":
 
-		if value, inMap := variables.MG[mName]; inMap {
+		if value, inMap := storage.MGServer.Get(mName); inMap {
+			// мы получили байты теперь преобразуем их в float
+			byteToFloat, _ := strconv.ParseFloat(string(value), 64)
 
 			if format {
-				//fmt.Println("getMetric with format")
-				answer = fmt.Sprintf("%0.3f", value)
+				answer = fmt.Sprintf("%0.3f", byteToFloat)
 			} else {
-				answer = strconv.FormatFloat(float64(value), 'f', -1, 64)
 
+				answer = strconv.FormatFloat(byteToFloat, 'f', -1, 64)
 			}
 
 			st = http.StatusOK
@@ -159,14 +160,14 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		}
 
 	case "counter":
-		if value, inMap := variables.MC[mName]; inMap {
+		if value, inMap := storage.MGServer.Get(mName); inMap {
+			// мы получили байты теперь преобразуем их в int
+			byteToInt, _ := strconv.ParseInt(string(value), 10, 64)
+
 			if format {
-				//fmt.Println("getMetric with format")
-				answer = fmt.Sprintf("%d", value)
+				answer = fmt.Sprintf("%d", byteToInt)
 			} else {
-				//fmt.Println("getMetric except format")
-				answer = strconv.FormatInt(int64(value), 10)
-				//answer = fmt.Sprintf("%d", value)
+				answer = strconv.FormatInt(byteToInt, 10)
 			}
 			st = http.StatusOK
 		} else {
@@ -284,10 +285,10 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 		getSHash := ""
 		if resp.MType == "gauge" {
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, resp.Value), config.ConfS.Key)
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
 
 		} else {
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, resp.Delta), config.ConfS.Key)
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
 		}
 
 		if getSHash != resp.Hash {

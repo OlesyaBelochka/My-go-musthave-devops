@@ -38,13 +38,20 @@ func (M CounterMemoryStorage) Set(name string, val []byte) {
 	//fmt.Printf("Set Counter %s, in val = %d \n", name, M[name])
 }
 
-func (M GaugeMemoryStorage) Get(s string, val []byte) {
-	//TODO implement me
-	//	panic("implement me")
+func (M GaugeMemoryStorage) Get(s string) ([]byte, bool) {
+
+	if value, inMap := M.M[s]; inMap {
+		return []byte(strconv.FormatInt(int64(value), 10)), true
+	}
+	return []byte(""), false // пустой список байт
+
 }
-func (M CounterMemoryStorage) Get(s string, val []byte) {
-	//TODO implement me
-	//panic("implement me")
+func (M CounterMemoryStorage) Get(s string) ([]byte, bool) {
+
+	if value, inMap := M.M[s]; inMap {
+		return []byte(strconv.FormatFloat(float64(value), 'f', -1, 64)), true
+	}
+	return []byte(""), false // пустой список байт
 }
 
 func (M GaugeMemoryStorage) Pall(st *runtime.MemStats) {
