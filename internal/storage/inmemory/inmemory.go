@@ -36,7 +36,7 @@ func (M GaugeMemoryStorage) Set(name string, val []byte) {
 func (M CounterMemoryStorage) Set(name string, val []byte) {
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
 	M.M[name] += variables.Counter(byteToInt)
-	fmt.Printf("Set Counter %s, in val = %d \n", name, byteToInt)
+	fmt.Printf("Set Counter %s, in val = %d \n", name, M.M[name])
 }
 
 func (M GaugeMemoryStorage) Get(s string) ([]byte, bool) {

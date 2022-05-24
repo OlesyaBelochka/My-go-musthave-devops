@@ -160,7 +160,7 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 		}
 
 	case "counter":
-		if value, inMap := storage.MGServer.Get(mName); inMap {
+		if value, inMap := storage.MCServer.Get(mName); inMap {
 			// мы получили байты теперь преобразуем их в int
 			byteToInt, _ := strconv.ParseInt(string(value), 10, 64)
 
@@ -208,7 +208,6 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetrics old")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
@@ -242,7 +241,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		storage.MGServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
+		storage.MCServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
 
 		sendStatus(w, http.StatusOK)
 
@@ -382,7 +381,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("HandleUpdateMetricsJSON")
+
 	var (
 		metrics         variables.Metrics
 		needCompression bool
@@ -413,7 +412,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		case "counter":
 			val := *metrics.Delta
 
-			storage.MGServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
+			storage.MCServer.Set(mName, []byte(strconv.FormatInt(int64(val), 10)))
 
 			st = http.StatusOK
 		}
