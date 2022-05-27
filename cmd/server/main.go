@@ -1,21 +1,21 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/db"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/inmemory"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
+	"time"
 )
-
-var MGServer = inmemory.NewGaugeMS()
-
-var MCServer = inmemory.NewCounterMS()
 
 func init() {
 	//loads values from .env into the system
@@ -35,7 +35,28 @@ func main() {
 			//Использование этого параметра имеет приоритет над параметром
 			//file-storage-path и автоматически задействует функциональность
 			//сервера БД
+			fmt.Print("данные у нас читаются из памяти")
+			storage.MGServer = inmemory.NewGaugeMS()
+			storage.MCServer = inmemory.NewCounterMS()
 			go files.RestoreMetricsFromFile()
+		} else {
+			fmt.Print("данные у нас читаются из БД")
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			dataBase, err := db.OpenDB(config.ConfS)
+
+			if err != nil {
+				fmt.Println("ошибка при открытии БД", err)
+			}
+
+			defer func() { _ = dataBase.Close() }()
+
+			if err := db.InitSchema(ctx, dataBase); err != nil {
+				fmt.Println("ошибка при создании инициализации схемы", err)
+			}
+			storage.MGServer = db.NewGaugeMS(dataBase)
+			storage.MCServer = db.NewCounterMS(dataBase)
 		}
 	}
 

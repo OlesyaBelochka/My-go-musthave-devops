@@ -1,19 +1,21 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/connection"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/db"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
@@ -381,6 +383,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(HandleUpdateMetricsJSON)
 
 	var (
 		metrics         variables.Metrics
@@ -424,11 +427,24 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 func HandlePingDB(w http.ResponseWriter, r *http.Request) {
 
-	err := connection.Start(config.ConfS)
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+
+	defer cancel()
+
+	dataBase, err := db.OpenDB(config.ConfS)
+
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("ошибка при открытии БД", err)
 		sendStatus(w, http.StatusInternalServerError)
 	}
+
+	defer func() { _ = dataBase.Close() }()
+
+	if err := db.InitSchema(ctx, dataBase); err != nil {
+		fmt.Println("ошибка при создании инициализации схемы", err)
+		sendStatus(w, http.StatusInternalServerError)
+	}
+
 	sendStatus(w, http.StatusOK)
 
 }
