@@ -10,6 +10,7 @@ import (
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/db"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/inmemory"
 	"io"
 	"log"
 	"net/http"
@@ -211,6 +212,14 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
+	if storage.MCServer == nil {
+		storage.MGServer = inmemory.NewGaugeMS()
+	}
+
+	if storage.MCServer == nil {
+		storage.MCServer = inmemory.NewCounterMS()
+	}
+
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 	mVal := chi.URLParam(r, "mValue")
@@ -383,7 +392,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(HandleUpdateMetricsJSON)
+	//fmt.Println(HandleUpdateMetricsJSON)
 
 	var (
 		metrics         variables.Metrics

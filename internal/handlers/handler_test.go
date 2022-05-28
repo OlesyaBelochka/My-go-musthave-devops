@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestHandleUpdateMetrics(t *testing.T) {
@@ -52,7 +51,6 @@ func TestHandleUpdateMetrics(t *testing.T) {
 
 			r.Post("/update/{mType}/{mName}/{mValue}", HandleUpdateMetrics)
 			r.ServeHTTP(w, request)
-
 			result := w.Result()
 
 			assert.Equal(t, result.StatusCode, tt.want.code)
