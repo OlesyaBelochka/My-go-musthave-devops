@@ -69,7 +69,7 @@ func (r CounterBDStorage) Set(name string, val []byte) {
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	fmt.Print("выполняем запрос Get Counter :", selectSQL)
+
 	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
 
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
@@ -95,7 +95,7 @@ func (r GaugeBDStorage) Get(name string) ([]byte, bool) {
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	fmt.Print("выполняем запрос Get Gauge :", selectSQL)
+	//fmt.Print("выполняем запрос Get Gauge :", selectSQL)
 	r.bd.QueryRow(selectSQL, name, "gauge").Scan(&value)
 
 	fmt.Print("получили значение метрики из БД  с типом Gauge  и менем ", name, " значение = ", value)
@@ -117,7 +117,7 @@ func (r CounterBDStorage) Get(name string) ([]byte, bool) {
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	fmt.Print("выполняем запрос Get Counter :", selectSQL)
+	//fmt.Print("выполняем запрос Get Counter :", selectSQL)
 	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
 
 	fmt.Print("получили значение метрики из БД  с типом Counter  и менем ", name, " значение = ", value)

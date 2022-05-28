@@ -295,13 +295,17 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	if resp.Hash != "" {
 
 		getSHash := ""
-		if resp.MType == "gauge" {
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+		switch resp.MType {
 
-		} else {
+		case "gauge":
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+		case "counter":
 			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
+		default:
+			return http.StatusBadRequest, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
 		}
 
+		fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
 		if getSHash != resp.Hash {
 			return http.StatusBadRequest, errors.New("Хеши не равны"), false
 		}

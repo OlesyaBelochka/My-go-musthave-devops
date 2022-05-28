@@ -69,6 +69,7 @@ func (g GaugeReporter) Report(key string) {
 			Value: &v.val,
 			Hash:  prhash.Hash(fmt.Sprintf("%s:gauge:%f", v.name, v.val), key),
 		}
+		fmt.Println("такую структуру отправляем на сервер: ", str)
 		SendJSON(str)
 	}
 }
@@ -81,6 +82,7 @@ func (g CounterReporter) Report(key string) {
 			Delta: &v.val,
 			Hash:  prhash.Hash(fmt.Sprintf("%s:counter:%d", v.name, v.val), key),
 		}
+		fmt.Println("такую структуру отправляем на сервер: ", str)
 		SendJSON(str)
 	}
 }
