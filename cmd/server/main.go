@@ -22,12 +22,14 @@ func init() {
 	//if err := godotenv.Load(); err != nil {
 	//	log.Print("No .env file found")
 	//}
-
 }
 
 func main() {
 
 	config.ConfS = config.NewS()
+
+	storage.MGServer = inmemory.NewGaugeMS()
+	storage.MCServer = inmemory.NewCounterMS()
 
 	if config.ConfS.Restore {
 		fmt.Println("start RestoreMetricsFromFile")
@@ -36,8 +38,7 @@ func main() {
 			//file-storage-path и автоматически задействует функциональность
 			//сервера БД
 			fmt.Print("данные у нас читаются из памяти")
-			storage.MGServer = inmemory.NewGaugeMS()
-			storage.MCServer = inmemory.NewCounterMS()
+
 			go files.RestoreMetricsFromFile()
 		} else {
 			fmt.Print("данные у нас читаются из БД")
