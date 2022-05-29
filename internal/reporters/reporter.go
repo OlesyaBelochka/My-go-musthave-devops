@@ -61,29 +61,64 @@ func NewCounterReporter() *CounterReporter {
 }
 
 func (g GaugeReporter) Report(key string) {
-	for _, v := range g.M {
+	var str []variables.Metrics
 
-		str := variables.Metrics{
+	for _, v := range g.M {
+		v := v
+		str1 := variables.Metrics{
 			ID:    v.name,
 			MType: "gauge",
 			Value: &v.val,
 			Hash:  prhash.Hash(fmt.Sprintf("%s:gauge:%f", v.name, v.val), key),
 		}
-		fmt.Println("такую структуру отправляем на сервер: ", str)
-		SendJSON(str)
+
+		str = append(str, str1)
+
 	}
+
+	SendButchJSON(str)
 }
 
 func (g CounterReporter) Report(key string) {
+	var str []variables.Metrics
+
 	for _, v := range g.M {
-		str := variables.Metrics{
+		v := v
+		str1 := variables.Metrics{
 			ID:    v.name,
 			MType: "counter",
 			Delta: &v.val,
 			Hash:  prhash.Hash(fmt.Sprintf("%s:counter:%d", v.name, v.val), key),
 		}
-		fmt.Println("такую структуру отправляем на сервер: ", str)
-		SendJSON(str)
+		str = append(str, str1)
+		//SendJSON(str1)
+	}
+	SendButchJSON(str)
+}
+
+func SendButchJSON(userData []variables.Metrics) {
+
+	if len(userData) == 0 {
+		fmt.Println("Агент получил пустую структуру. На сервер ее не обрабатываем, и не отправляем")
+		return
+	}
+	strJSON, err := json.MarshalIndent(userData, "", "  ")
+	fmt.Println("такую структуру отправляем на сервер: ", string(strJSON))
+
+	variables.PrinterErr(err, "")
+	strJSON, err = compression.Compress(strJSON)
+	variables.PrinterErr(err, "# mitake during compression:")
+
+	req, err := http.NewRequest("POST", "http://"+internal.ConfA.Address+"/updates/", bytes.NewBuffer(strJSON))
+	variables.PrinterErr(err, "# mistake NewRequest : ")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Encoding", "gzip")
+
+	resp, err := internal.Client.Do(req)
+	variables.PrinterErr(err, "# sending mistake :")
+	if resp != nil {
+		err = resp.Body.Close()
+		variables.PrinterErr(err, "")
 	}
 }
 
@@ -114,6 +149,8 @@ func ReportAgentNew(ctx context.Context, key string) {
 		case <-timerReport.C:
 			gR := NewGaugeReporter()
 			cR := NewCounterReporter()
+			fmt.Println(gR)
+			fmt.Println(cR)
 
 			var reporters []ReporterInterface
 			rep := append(reporters, gR, cR)

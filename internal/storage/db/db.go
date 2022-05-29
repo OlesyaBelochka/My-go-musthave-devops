@@ -63,27 +63,115 @@ func (r GaugeBDStorage) Set(name string, val []byte) {
 }
 
 func (r CounterBDStorage) Set(name string, val []byte) {
-	var value int64
-	selectSQL := `
-	SELECT delta
-	FROM metrics 
-	WHERE id=$1 AND mtype=$2;
-	`
-
-	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
 
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
 	insertSQL := `INSERT INTO metrics VALUES ($1, $2, $3 ,0)
-	ON CONFLICT (id,mtype) DO UPDATE SET delta =($3);`
+	ON CONFLICT (id,mtype) DO UPDATE SET delta =(metrics.delta + ($3));`
 
-	_, err := r.bd.Exec(insertSQL, name, "counter", byteToInt+value)
+	_, err := r.bd.Exec(insertSQL, name, "counter", byteToInt)
+
 	if err != nil {
-		fmt.Print("ошибка при вставке gauge ", name, " ", byteToInt, " ошибка :", err)
+		fmt.Print("ошибка при вставке counter ", name, " ", byteToInt, " ошибка :", err)
 		return
 	}
 
 	fmt.Printf("Add in BDCounter %s, in val = %d \n", name, byteToInt)
 
+}
+
+func (r GaugeBDStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+	fmt.Println("// шаг 1 — объявляем транзакцию")
+	// шаг 1 — объявляем транзакцию
+	db := r.bd
+
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println("Произошла ошибка на шаге 1 :", err)
+		return
+	}
+	// шаг 1.1 — если возникает ошибка, откатываем изменения
+	defer tx.Rollback()
+
+	fmt.Println("// шаг 2 — готовим инструкцию")
+	// шаг 2 — готовим инструкцию
+	insertSQL := `INSERT INTO metrics VALUES ($1, $2, 0 ,$3)
+	ON CONFLICT (id,mtype) DO UPDATE SET val=EXCLUDED.val;`
+
+	stmt, err := tx.PrepareContext(ctx, insertSQL)
+	if err != nil {
+		fmt.Println("Произошла ошибка на шаге 2 : ", err)
+		return
+	}
+	// шаг 2.1 — не забываем закрыть инструкцию, когда она больше не нужна
+	defer stmt.Close()
+
+	fmt.Println("// шаг 3 — указываем в цикле, что каждая метрика будет добавлена в транзакцию")
+	for i := 0; i < len(name); i++ {
+
+		// шаг 3 — указываем, что каждая метрика будет добавлена в транзакцию
+		byteToFloat, _ := strconv.ParseFloat(string(val[i]), 64)
+
+		if _, err = stmt.ExecContext(ctx, name[i], "gauge", byteToFloat); err != nil {
+			fmt.Println("Произошла ошибка на шаге 3, не добавили метрику в транзации: ", err)
+			return
+		}
+	}
+	// шаг 4 — сохраняем изменения
+	if err = tx.Commit(); err != nil {
+		// шаг 4 — сохраняем изменения
+		fmt.Println("Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ", err)
+		return
+	} else {
+		fmt.Println("Запись метрик в базу данных произошла успешно! Ты молодец!")
+	}
+
+}
+
+func (r CounterBDStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+	fmt.Println("// шаг 1 — объявляем транзакцию")
+	// шаг 1 — объявляем транзакцию
+	db := r.bd
+
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println("Произошла ошибка на шаге 1 :", err)
+		return
+	}
+	// шаг 1.1 — если возникает ошибка, откатываем изменения
+	defer tx.Rollback()
+
+	fmt.Println("// шаг 2 — готовим инструкцию")
+	// шаг 2 — готовим инструкцию
+	insertSQL := `INSERT INTO metrics VALUES ($1, $2, $3 ,0)
+	ON CONFLICT (id,mtype) DO UPDATE SET delta =(metrics.delta + ($3));`
+
+	stmt, err := tx.PrepareContext(ctx, insertSQL)
+	if err != nil {
+		fmt.Println("Произошла ошибка на шаге 2 : ", err)
+		return
+	}
+	// шаг 2.1 — не забываем закрыть инструкцию, когда она больше не нужна
+	defer stmt.Close()
+
+	fmt.Println("// шаг 3 — указываем в цикле, что каждая метрика будет добавлена в транзакцию")
+	for i := 0; i < len(name); i++ {
+
+		// шаг 3 — указываем, что каждая метрика будет добавлена в транзакцию
+		byteToInt, _ := strconv.ParseInt(string(val[i]), 10, 64)
+
+		if _, err = stmt.ExecContext(ctx, name[i], "counter", byteToInt); err != nil {
+			fmt.Println("Произошла ошибка на шаге 3, не добавили метрику в транзации: ", err)
+			return
+		}
+	}
+	// шаг 4 — сохраняем изменения
+	if err = tx.Commit(); err != nil {
+		// шаг 4 — сохраняем изменения
+		fmt.Println("Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ", err)
+		return
+	} else {
+		fmt.Println("Запись метрик в базу данных произошла успешно! Ты молодец!")
+	}
 }
 
 func (r GaugeBDStorage) Get(name string) ([]byte, bool) {

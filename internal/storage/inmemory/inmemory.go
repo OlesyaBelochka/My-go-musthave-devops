@@ -1,6 +1,7 @@
 package inmemory
 
 import (
+	"context"
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"strconv"
@@ -41,6 +42,18 @@ func (M CounterMemoryStorage) Set(name string, val []byte) {
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
 	M.M[name] += variables.Counter(byteToInt)
 	fmt.Printf("Set Counter %s, in val = %d \n", name, M.M[name])
+}
+
+func (M GaugeMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+	for i := 0; i < len(name); i++ {
+		M.Set(name[i], val[i])
+	}
+}
+
+func (M CounterMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+	for i := 0; i < len(name); i++ {
+		M.Set(name[i], val[i])
+	}
 }
 
 func (M GaugeMemoryStorage) Get(s string) ([]byte, bool) {

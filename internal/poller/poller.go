@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-type paller interface {
-}
-
 func PallStart(ctx context.Context) {
 	for {
 		timer := time.NewTimer(internal.ConfA.PollInterval)

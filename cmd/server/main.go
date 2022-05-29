@@ -82,6 +82,7 @@ func main() {
 	r.Post("/update", handlers.HandleUpdateMetricsJSON)
 	r.Post("/value", handlers.HandleGetMetricJSON)
 	r.Post("/value", handlers.HandleGetMetricJSON)
+	r.Post("/updates", handlers.HandleUpdatesSliceMetricsJSON)
 
 	if config.ConfS.Address != "" {
 		err := http.ListenAndServe(config.ConfS.Address, r)

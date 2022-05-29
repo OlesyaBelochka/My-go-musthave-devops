@@ -10,7 +10,6 @@ import (
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/db"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/inmemory"
 	"io"
 	"log"
 	"net/http"
@@ -33,7 +32,7 @@ func sendStatus(w http.ResponseWriter, status int) {
 
 }
 
-func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e error, h bool) {
+func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e error) {
 	resp := variables.ServResponses{}
 
 	if status == http.StatusOK {
@@ -212,14 +211,6 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 
 func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
-	if storage.MCServer == nil {
-		storage.MGServer = inmemory.NewGaugeMS()
-	}
-
-	if storage.MCServer == nil {
-		storage.MCServer = inmemory.NewCounterMS()
-	}
-
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
 	mVal := chi.URLParam(r, "mValue")
@@ -281,6 +272,8 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	}
 
+	fmt.Print(" Сервер получил json ", string(body), "\n выполняет дальнейшую обработку \n")
+
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
 		fmt.Println("can't unmarshal: ", err.Error())
@@ -291,29 +284,75 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
 	// то отправляем лесом
-	var isHash bool
-	if resp.Hash != "" {
+	err, isHash := verificationHash(*resp)
 
-		getSHash := ""
-		switch resp.MType {
-
-		case "gauge":
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
-		case "counter":
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
-		default:
-			return http.StatusBadRequest, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
-		}
-
-		fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
-		if getSHash != resp.Hash {
-			return http.StatusBadRequest, errors.New("Хеши не равны"), false
-		}
-		isHash = true
-
+	if err != nil {
+		return http.StatusBadRequest, err, isHash
 	}
 
 	return http.StatusOK, nil, isHash
+
+}
+
+func readBodySliceJSONRequest(w http.ResponseWriter, r *http.Request, resp *[]variables.Metrics, needCompression *bool) (int, error) {
+
+	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+		*needCompression = true
+	}
+
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println(err)
+		return http.StatusInternalServerError, err
+	}
+
+	if *needCompression {
+		body, err = compression.Decompress(body)
+		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
+
+	}
+
+	fmt.Print(" Сервер получил json ", string(body), "\n выполняет дальнейшую обработку \n")
+
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		fmt.Println("can't unmarshal: ", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		return http.StatusInternalServerError, err
+	}
+
+	fmt.Println(" вот такая структура ", resp)
+
+	return http.StatusInternalServerError, err
+
+	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
+	// то отправляем лесом
+	//	var isHash bool
+
+	//if resp.Hash != "" {
+	//
+	//	getSHash := ""
+	//	switch resp.MType {
+	//
+	//	case "gauge":
+	//		getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+	//	case "counter":
+	//		getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
+	//	default:
+	//		return http.StatusBadRequest, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
+	//	}
+	//
+	//	fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
+	//	if getSHash != resp.Hash {
+	//		return http.StatusBadRequest, errors.New("Хеши не равны"), false
+	//	}
+	//	isHash = true
+	//
+	//}
+
+	return http.StatusOK, nil
 
 }
 
@@ -333,7 +372,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(isHash)
+	fmt.Println("надо при отправке с сервера вычислять хеш: ", isHash)
 
 	mType := resp.MType
 	mName := resp.ID
@@ -403,7 +442,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, err, isHash := readBodyJSONRequest(w, r, &metrics, &needCompression)
+	st, err, _ := readBodyJSONRequest(w, r, &metrics, &needCompression)
 
 	if err == nil {
 
@@ -434,7 +473,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sendResponceJSON(w, st, needCompression, err, isHash)
+	sendResponceJSON(w, st, needCompression, err)
 
 }
 
@@ -459,5 +498,121 @@ func HandlePingDB(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendStatus(w, http.StatusOK)
+
+}
+
+type gaugeM struct {
+	id  string
+	val float64
+}
+
+type gaugeC struct {
+	id  string
+	val int64
+}
+
+func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("HandleUpdatesSliceMetricsJSON")
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+
+	defer cancel()
+
+	var (
+		slMetrics       []variables.Metrics
+		needCompression bool
+
+		mmNameG []string
+		mmNameC []string
+		mmValG  [][]byte
+		mmValC  [][]byte
+	)
+
+	st, err := readBodySliceJSONRequest(w, r, &slMetrics, &needCompression)
+
+	if err == nil {
+
+		for _, metrics := range slMetrics {
+
+			mType := metrics.MType
+			mName := metrics.ID
+
+			if mName == "" || (mType != "gauge" && mType != "counter") {
+				mType = ""
+				err = errors.New("can't find gauge or counter or empty id")
+				st = http.StatusNotImplemented
+			}
+
+			switch strings.ToLower(mType) {
+
+			case "gauge":
+
+				val := *metrics.Value
+
+				err, _ := verificationHash(metrics)
+
+				if err != nil {
+
+					return
+				}
+				mmNameG = append(mmNameG, mName)
+				mmValG = append(mmValG, []byte(strconv.FormatFloat(float64(val), 'f', -1, 64)))
+
+			case "counter":
+
+				val := *metrics.Delta
+
+				err, _ := verificationHash(metrics)
+
+				if err != nil {
+					return
+				}
+				mmNameC = append(mmNameC, mName)
+				mmValC = append(mmValC, []byte(strconv.FormatInt(int64(val), 10)))
+
+			}
+		}
+
+		fmt.Println("len(mmNameG) = ", len(mmNameG))
+		if len(mmNameG) > 0 {
+			storage.MGServer.SetSlice(ctx, mmNameG, mmValG)
+			st = http.StatusOK
+		}
+
+		fmt.Println("len(mmNameC) = ", len(mmNameC))
+		if len(mmNameC) > 0 {
+			storage.MCServer.SetSlice(ctx, mmNameC, mmValC)
+			st = http.StatusOK
+		}
+
+		sendResponceJSON(w, st, needCompression, err)
+
+	}
+}
+
+func verificationHash(resp variables.Metrics) (error, bool) {
+
+	isHash := false
+	if resp.Hash != "" {
+
+		getSHash := ""
+		switch resp.MType {
+
+		case "gauge":
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+		case "counter":
+			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
+		default:
+			return errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
+		}
+
+		fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
+		if getSHash != resp.Hash {
+			return errors.New("Хеши не равны"), false
+		}
+		isHash = true
+	}
+
+	return nil, isHash
 
 }
