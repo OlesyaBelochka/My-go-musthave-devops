@@ -2,10 +2,9 @@ package variables
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"runtime"
-	"time"
 )
 
 type Gauge float64
@@ -15,6 +14,9 @@ const (
 	ShowLog     = true
 	ShowFullLog = true
 )
+
+var errorLog = log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+var infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 
 var MG = map[string]Gauge{}
 
@@ -88,13 +90,12 @@ func (r *readerM) Close() error {
 
 func PrinterErr(err error, srt string) {
 	if err != nil {
-		fmt.Println(srt, err)
-		return
+		errorLog.Println(srt, err)
 	}
 
 }
 func FShowLog(s string) {
 	if ShowLog {
-		fmt.Println(s, time.Now())
+		infoLog.Println(s)
 	}
 }

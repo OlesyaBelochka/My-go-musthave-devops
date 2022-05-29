@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/inmemory"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
@@ -45,7 +44,7 @@ func TestHandleUpdateMetrics(t *testing.T) {
 			want{http.StatusBadRequest, "text/plain"},
 		},
 	}
-	fmt.Println("start..")
+
 	r := chi.NewRouter()
 
 	for _, tt := range tests {

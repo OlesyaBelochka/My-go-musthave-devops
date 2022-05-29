@@ -32,16 +32,15 @@ func main() {
 	storage.MCServer = inmemory.NewCounterMS()
 
 	if config.ConfS.Restore {
-		fmt.Println("start RestoreMetricsFromFile")
 		if config.ConfS.DatabaseURL == "" {
 			//Использование этого параметра имеет приоритет над параметром
 			//file-storage-path и автоматически задействует функциональность
 			//сервера БД
-			fmt.Print("данные у нас читаются из памяти")
+			variables.FShowLog("Данные на сервере читаются из памяти")
 
 			go files.RestoreMetricsFromFile()
 		} else {
-			fmt.Print("данные у нас читаются из БД")
+			variables.FShowLog("Данные на сервере читаются из БД")
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 

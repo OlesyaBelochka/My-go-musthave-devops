@@ -99,13 +99,13 @@ func (g CounterReporter) Report(key string) {
 func SendButchJSON(userData []variables.Metrics) {
 
 	if len(userData) == 0 {
-		fmt.Println("Агент получил пустую структуру. На сервер ее не обрабатываем, и не отправляем")
+		variables.FShowLog("Агент получил пустую структуру. На сервер ее не обрабатываем, и не отправляем")
 		return
 	}
 	strJSON, err := json.MarshalIndent(userData, "", "  ")
-	fmt.Println("такую структуру отправляем на сервер: ", string(strJSON))
+	variables.FShowLog("такую структуру отправляем на сервер: " + string(strJSON))
+	variables.PrinterErr(err, "(SendButchJSON) Не смогли сделать Маршал ошибка: ")
 
-	variables.PrinterErr(err, "")
 	strJSON, err = compression.Compress(strJSON)
 	variables.PrinterErr(err, "# mitake during compression:")
 

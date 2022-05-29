@@ -35,13 +35,13 @@ func NewGaugeMS() *GaugeMemoryStorage {
 func (M GaugeMemoryStorage) Set(name string, val []byte) {
 	byteToFloat, _ := strconv.ParseFloat(string(val), 64)
 	M.M[name] = variables.Gauge(byteToFloat)
-	fmt.Printf("Set Gauge %s, in val = %f \n", name, byteToFloat)
+	variables.FShowLog(fmt.Sprintf("(Set :GaugeMemoryStorage)  %s, in val = %f \n", name, byteToFloat))
 }
 
 func (M CounterMemoryStorage) Set(name string, val []byte) {
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
 	M.M[name] += variables.Counter(byteToInt)
-	fmt.Printf("Set Counter %s, in val = %d \n", name, M.M[name])
+	variables.FShowLog(fmt.Sprintf("(Set: CounterMemoryStorage) %s, in val = %d \n", name, M.M[name]))
 }
 
 func (M GaugeMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {

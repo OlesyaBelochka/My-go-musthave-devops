@@ -50,12 +50,11 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 
 	strJSON, err := json.Marshal(resp)
 
-	fmt.Println("#(sendResponceJSON) " + string(strJSON))
-
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("(sendResponceJSON) Marshal error: " + err.Error()))
-		fmt.Println("# (sendResponceJSON) Marshal error: " + err.Error())
+
+		variables.PrinterErr(err, "Marshal error:")
 		return
 	}
 
@@ -65,7 +64,7 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
-			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
+			variables.PrinterErr(err, "(sendResponceJSON) Compress error :")
 			return
 		}
 	}
@@ -77,9 +76,6 @@ func sendResponceJSON(w http.ResponseWriter, status int, needCompression bool, e
 		variables.PrinterErr(err, ""+"- Send error")
 		return
 	}
-
-	fmt.Println("#(sendResponceJSON) responce succesfully")
-
 }
 
 func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
@@ -101,11 +97,10 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		fmt.Println("(HandleGetAllMetrics)  сжимает файл чтобы отправить ответ")
 
 		data, err := compression.Compress([]byte(html))
 		if err != nil {
-			fmt.Println(err)
+			variables.PrinterErr(err, "(HandleGetAllMetrics) Ошибка сжатия : ")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -113,14 +108,14 @@ func HandleGetAllMetrics(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Encoding", "gzip")
 
 		if _, err := w.Write(data); err != nil {
-			fmt.Println(err)
+			variables.PrinterErr(err, "(HandleGetAllMetrics) Ошибка отправки : ")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
 		if _, err := w.Write([]byte(html)); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			fmt.Println(err)
+			variables.PrinterErr(err, "(HandleGetAllMetrics) Ошибка отправки : ")
 			return
 		}
 	}
@@ -186,12 +181,9 @@ func getMetric(mType, mName string, format bool) (string, int, error) {
 }
 
 func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println("star HandleGetMetric old")
 
 	mType := chi.URLParam(r, "mType")
 	mName := chi.URLParam(r, "mName")
-
-	//fmt.Println("type metric: ", mType, " name metric: ", mName)
 
 	val, code, err := getMetric(mType, mName, true)
 
@@ -199,12 +191,11 @@ func HandleGetMetric(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), code)
 		return
 	}
-	fmt.Println("подобрали по типу: ", mType, " и  имени : ", mName, " значение метрики ", val, " в HandleGetMetric old")
+
 	_, err = w.Write([]byte(val))
 
 	if err != nil {
-		fmt.Println(err)
-
+		variables.PrinterErr(err, "(HandleGetMetric) Ошибка отправки : ")
 	}
 
 }
@@ -224,7 +215,6 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 	case "gauge":
 		val, err := strconv.ParseFloat(mVal, 64)
-		fmt.Println(val)
 		if err != nil {
 			sendStatus(w, http.StatusBadRequest) // 400
 			return
@@ -253,30 +243,32 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool) (int, error, bool) {
+func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool, doVerificationHash bool) (int, error, bool) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		*needCompression = true
 	}
 
 	body, err := io.ReadAll(r.Body)
+	variables.PrinterErr(err, "(readBodyJSONRequest) Ошибка чтения тела запроса : ")
 
 	if err != nil {
-		fmt.Println(err)
 		return http.StatusInternalServerError, err, false
 	}
 
 	if *needCompression {
 		body, err = compression.Decompress(body)
-		variables.PrinterErr(err, "#HandleGetMetricJSON mistake decompression: ")
-
+		variables.PrinterErr(err, "#(readBodyJSONRequest)ошибка декомпрессии: ")
+		if err != nil {
+			return http.StatusInternalServerError, err, false
+		}
 	}
 
-	fmt.Print(" Сервер получил json ", string(body), "\n выполняет дальнейшую обработку \n")
+	variables.FShowLog(fmt.Sprintf(" Сервер получил json %s \n выполняет дальнейшую обработку \n", string(body)))
 
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		fmt.Println("can't unmarshal: ", err.Error())
+		variables.PrinterErr(err, "can't unmarshal: ")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
 		return http.StatusInternalServerError, err, false
@@ -284,9 +276,13 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
 	// то отправляем лесом
-	isHash, err := verificationHash(*resp)
+	isHash := false
+	if doVerificationHash {
+		isHash, err = verificationHash(*resp)
+	}
 
 	if err != nil {
+		variables.PrinterErr(err, "")
 		return http.StatusBadRequest, err, isHash
 	}
 
@@ -303,7 +299,8 @@ func readBodySliceJSONRequest(w http.ResponseWriter, r *http.Request, resp *[]va
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		variables.PrinterErr(err, "#(readBodySliceJSONRequest) ошибка чтения тела запроса: ")
+
 		return http.StatusInternalServerError, err
 	}
 
@@ -313,44 +310,17 @@ func readBodySliceJSONRequest(w http.ResponseWriter, r *http.Request, resp *[]va
 
 	}
 
-	fmt.Print(" Сервер получил json ", string(body), "\n выполняет дальнейшую обработку \n")
+	variables.FShowLog(fmt.Sprintf(" Сервер получил json %s \n выполняет дальнейшую обработку \n", string(body)))
 
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		fmt.Println("can't unmarshal: ", err.Error())
+		variables.PrinterErr(err, "can't unmarshal: ")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
 		return http.StatusInternalServerError, err
 	}
 
-	fmt.Println(" вот такая структура ", resp)
-
 	return http.StatusInternalServerError, err
-
-	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
-	// то отправляем лесом
-	//	var isHash bool
-
-	//if resp.Hash != "" {
-	//
-	//	getSHash := ""
-	//	switch resp.MType {
-	//
-	//	case "gauge":
-	//		getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
-	//	case "counter":
-	//		getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
-	//	default:
-	//		return http.StatusBadRequest, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
-	//	}
-	//
-	//	fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
-	//	if getSHash != resp.Hash {
-	//		return http.StatusBadRequest, errors.New("Хеши не равны"), false
-	//	}
-	//	isHash = true
-	//
-	//}
 
 	return http.StatusOK, nil
 
@@ -364,7 +334,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, err, isHash := readBodyJSONRequest(w, r, &resp, &needCompression)
+	st, err, isHash := readBodyJSONRequest(w, r, &resp, &needCompression, false)
 
 	if err != nil {
 		// это значит что мы по какой-то причине не смогли выполнить процедуру выше и отправляем статус
@@ -372,7 +342,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("надо при отправке с сервера вычислять хеш: ", isHash)
+	variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = ", isHash))
 
 	mType := resp.MType
 	mName := resp.ID
@@ -380,7 +350,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	val, code, err := getMetric(mType, mName, false)
 
 	if err != nil {
-		fmt.Println("#mistake getMetric: ", code, err)
+		variables.PrinterErr(err, "(HandleGetMetricJSON) ошибка выполнения функции getMetric: ")
 		http.Error(w, err.Error(), code)
 		return
 	}
@@ -391,7 +361,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		valFl, err := strconv.ParseFloat(val, 64)
 
 		if err != nil {
-			fmt.Println(err)
+			variables.PrinterErr(err, "(HandleGetMetricJSON) не можем сделать ParseFloat для gauge")
 			return
 		}
 		resp.Value = &valFl
@@ -400,27 +370,27 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		valInt, err := strconv.ParseInt(val, 10, 64)
 
 		if err != nil {
-			fmt.Println(err)
+			variables.PrinterErr(err, "(HandleGetMetricJSON) не можем сделать ParseInt для counter")
 			return
 		}
-		resp.Delta = &valInt
 
+		resp.Delta = &valInt
 	}
 
 	strJSON, err := json.Marshal(resp)
 	if err != nil {
-		fmt.Println(err)
+		variables.PrinterErr(err, "(HandleGetMetricJSON) не можем сделать json.Marshal для структуры")
 		return
 	}
 
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		fmt.Println("(HandleGetMetricJSON)  сжимает файл чтобы отправить ответ")
+		variables.FShowLog("(HandleGetMetricJSON) Увидели заголовок Accept-Encoding,  сжимает файл чтобы отправить ответ ")
 		w.Header().Set("Content-Encoding", "gzip")
 		strJSON, err = compression.Compress(strJSON)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("# (sendResponceJSON) Compress error : " + err.Error()))
-			fmt.Println("# (sendResponceJSON) Compress error : " + err.Error())
+			w.Write([]byte("# (HandleGetMetricJSON) Compress error : " + err.Error()))
+			variables.PrinterErr(err, "# (HandleGetMetricJSON) Compress error : ")
 			return
 		}
 	}
@@ -430,19 +400,18 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(strJSON)
 
 	if err != nil {
-		fmt.Println(err)
+		variables.PrinterErr(err, "#(HandleGetMetricJSON) ошибка отправки ответного файла от сервера: ")
 	}
 }
 
 func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
-	//fmt.Println(HandleUpdateMetricsJSON)
 
 	var (
 		metrics         variables.Metrics
 		needCompression bool
 	)
 
-	st, err, _ := readBodyJSONRequest(w, r, &metrics, &needCompression)
+	st, err, _ := readBodyJSONRequest(w, r, &metrics, &needCompression, true)
 
 	if err == nil {
 
@@ -486,14 +455,14 @@ func HandlePingDB(w http.ResponseWriter, r *http.Request) {
 	dataBase, err := db.OpenDB(config.ConfS)
 
 	if err != nil {
-		fmt.Println("ошибка при открытии БД", err)
+		variables.PrinterErr(err, "#(HandlePingDB) ошибка при открытии БД: ")
 		sendStatus(w, http.StatusInternalServerError)
 	}
 
 	defer func() { _ = dataBase.Close() }()
 
 	if err := db.InitSchema(ctx, dataBase); err != nil {
-		fmt.Println("ошибка при создании инициализации схемы", err)
+		variables.PrinterErr(err, "#(HandlePingDB)ошибка при создании схемы инициализации: ")
 		sendStatus(w, http.StatusInternalServerError)
 	}
 
@@ -512,8 +481,6 @@ type gaugeC struct {
 }
 
 func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("HandleUpdatesSliceMetricsJSON")
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 
 	defer cancel()
@@ -552,7 +519,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 				_, err := verificationHash(metrics)
 
 				if err != nil {
-
+					variables.PrinterErr(err, "")
 					return
 				}
 				mmNameG = append(mmNameG, mName)
@@ -563,8 +530,8 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 				val := *metrics.Delta
 
 				_, err := verificationHash(metrics)
-
 				if err != nil {
+					variables.PrinterErr(err, "")
 					return
 				}
 				mmNameC = append(mmNameC, mName)
@@ -573,13 +540,11 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		fmt.Println("len(mmNameG) = ", len(mmNameG))
 		if len(mmNameG) > 0 {
 			storage.MGServer.SetSlice(ctx, mmNameG, mmValG)
 			st = http.StatusOK
 		}
 
-		fmt.Println("len(mmNameC) = ", len(mmNameC))
 		if len(mmNameC) > 0 {
 			storage.MCServer.SetSlice(ctx, mmNameC, mmValC)
 			st = http.StatusOK
@@ -606,9 +571,10 @@ func verificationHash(resp variables.Metrics) (bool, error) {
 			return false, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики")
 		}
 
-		fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
+		str := fmt.Sprintf("полученный хеш: %s, посчитанный хеш: %s,считали для метки: %s,использовали ключ: %s", resp.Hash, getSHash, fmt.Sprintf("ID = %s Type = %s Знач = %f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+
 		if getSHash != resp.Hash {
-			return false, errors.New("Хеши не равны")
+			return false, errors.New("Хеши не равны: " + str)
 		}
 		isHash = true
 	}

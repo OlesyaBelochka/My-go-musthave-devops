@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	_ "github.com/jackc/pgx/stdlib"
 	"strconv"
 )
@@ -50,16 +51,17 @@ func InitSchema(ctx context.Context, db *sql.DB) error {
 
 func (r GaugeBDStorage) Set(name string, val []byte) {
 	byteToFloat, _ := strconv.ParseFloat(string(val), 64)
-	//insertSQL := `INSERT INTO metrics VALUES ($1, $2, 0 ,$3)
 
 	insertSQL := `INSERT INTO metrics VALUES ($1, $2, 0 ,$3)
 	ON CONFLICT (id,mtype) DO UPDATE SET val=EXCLUDED.val;`
 
 	_, err := r.bd.Exec(insertSQL, name, "gauge", byteToFloat)
 	if err != nil {
-		fmt.Print("ошибка при вставке gauge ", name, " ", byteToFloat, " ошибка :", err)
+		variables.PrinterErr(err, fmt.Sprintf("ошибка при вставке gauge %s, %f", name, byteToFloat))
+		return
 	}
-	fmt.Printf("Set  in BD Gauge %s, in val = %f \n", name, byteToFloat)
+
+	variables.FShowLog(fmt.Sprintf("Set  in BDGauge %s, in val = %f \n", name, byteToFloat))
 }
 
 func (r CounterBDStorage) Set(name string, val []byte) {
@@ -71,83 +73,78 @@ func (r CounterBDStorage) Set(name string, val []byte) {
 	_, err := r.bd.Exec(insertSQL, name, "counter", byteToInt)
 
 	if err != nil {
-		fmt.Print("ошибка при вставке counter ", name, " ", byteToInt, " ошибка :", err)
+		variables.PrinterErr(err, fmt.Sprintf("ошибка при вставке counter %s, %f", name, byteToInt))
 		return
 	}
 
-	fmt.Printf("Add in BDCounter %s, in val = %d \n", name, byteToInt)
+	variables.FShowLog(fmt.Sprintf("Add  in BDCounter %s, in val = %v \n", name, byteToInt))
 
 }
 
 func (r GaugeBDStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
-	fmt.Println("// шаг 1 — объявляем транзакцию")
 	// шаг 1 — объявляем транзакцию
 	db := r.bd
 
 	tx, err := db.Begin()
 	if err != nil {
-		fmt.Println("Произошла ошибка на шаге 1 :", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 1 :")
 		return
 	}
 	// шаг 1.1 — если возникает ошибка, откатываем изменения
 	defer tx.Rollback()
 
-	fmt.Println("// шаг 2 — готовим инструкцию")
 	// шаг 2 — готовим инструкцию
 	insertSQL := `INSERT INTO metrics VALUES ($1, $2, 0 ,$3)
 	ON CONFLICT (id,mtype) DO UPDATE SET val=EXCLUDED.val;`
 
 	stmt, err := tx.PrepareContext(ctx, insertSQL)
 	if err != nil {
-		fmt.Println("Произошла ошибка на шаге 2 : ", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 2 :")
 		return
 	}
 	// шаг 2.1 — не забываем закрыть инструкцию, когда она больше не нужна
 	defer stmt.Close()
 
-	fmt.Println("// шаг 3 — указываем в цикле, что каждая метрика будет добавлена в транзакцию")
 	for i := 0; i < len(name); i++ {
 
 		// шаг 3 — указываем, что каждая метрика будет добавлена в транзакцию
 		byteToFloat, _ := strconv.ParseFloat(string(val[i]), 64)
 
 		if _, err = stmt.ExecContext(ctx, name[i], "gauge", byteToFloat); err != nil {
-			fmt.Println("Произошла ошибка на шаге 3, не добавили метрику в транзации: ", err)
+			variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 3, не добавили метрику в транзации: ")
 			return
 		}
 	}
 	// шаг 4 — сохраняем изменения
 	if err = tx.Commit(); err != nil {
 		// шаг 4 — сохраняем изменения
-		fmt.Println("Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ")
 		return
 	} else {
-		fmt.Println("Запись метрик в базу данных произошла успешно! Ты молодец!")
+		variables.FShowLog("Запись метрик в базу данных произошла успешно! Ты молодец!")
 	}
 
 }
 
 func (r CounterBDStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
-	fmt.Println("// шаг 1 — объявляем транзакцию")
 	// шаг 1 — объявляем транзакцию
 	db := r.bd
 
 	tx, err := db.Begin()
 	if err != nil {
-		fmt.Println("Произошла ошибка на шаге 1 :", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 1 :")
 		return
 	}
 	// шаг 1.1 — если возникает ошибка, откатываем изменения
 	defer tx.Rollback()
 
-	fmt.Println("// шаг 2 — готовим инструкцию")
 	// шаг 2 — готовим инструкцию
 	insertSQL := `INSERT INTO metrics VALUES ($1, $2, $3 ,0)
 	ON CONFLICT (id,mtype) DO UPDATE SET delta =(metrics.delta + ($3));`
 
 	stmt, err := tx.PrepareContext(ctx, insertSQL)
 	if err != nil {
-		fmt.Println("Произошла ошибка на шаге 2 : ", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 2 :")
 		return
 	}
 	// шаг 2.1 — не забываем закрыть инструкцию, когда она больше не нужна
@@ -160,33 +157,30 @@ func (r CounterBDStorage) SetSlice(ctx context.Context, name []string, val [][]b
 		byteToInt, _ := strconv.ParseInt(string(val[i]), 10, 64)
 
 		if _, err = stmt.ExecContext(ctx, name[i], "counter", byteToInt); err != nil {
-			fmt.Println("Произошла ошибка на шаге 3, не добавили метрику в транзации: ", err)
+			variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 3, не добавили метрику в транзации: ")
 			return
 		}
 	}
 	// шаг 4 — сохраняем изменения
 	if err = tx.Commit(); err != nil {
 		// шаг 4 — сохраняем изменения
-		fmt.Println("Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ", err)
+		variables.PrinterErr(err, "(SetSlice) Произошла ошибка на шаге 4, не смогли сохранить метрики в транзакции: ")
 		return
 	} else {
-		fmt.Println("Запись метрик в базу данных произошла успешно! Ты молодец!")
+		variables.FShowLog("Запись метрик в базу данных произошла успешно! Ты молодец!")
 	}
 }
 
 func (r GaugeBDStorage) Get(name string) ([]byte, bool) {
-	fmt.Print("Зашли в функцию Get Gauge")
-
 	var value float64
 	selectSQL := `
 	SELECT val
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	//fmt.Print("выполняем запрос Get Gauge :", selectSQL)
 	r.bd.QueryRow(selectSQL, name, "gauge").Scan(&value)
 
-	fmt.Print("получили значение метрики из БД  с типом Gauge  и менем ", name, " значение = ", value)
+	variables.FShowLog(fmt.Sprintf("(Get: GaugeBDStorage) получили значение метрики из БД с типом Gauge  и менем ", name, " значение = ", value))
 
 	if value != 0 {
 		return []byte(strconv.FormatFloat(value, 'f', -1, 64)), true
@@ -208,7 +202,7 @@ func (r CounterBDStorage) Get(name string) ([]byte, bool) {
 	//fmt.Print("выполняем запрос Get Counter :", selectSQL)
 	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
 
-	fmt.Print("получили значение метрики из БД  с типом Counter  и менем ", name, " значение = ", value)
+	variables.FShowLog(fmt.Sprintf("(Get: CounterBDStorage) получили значение метрики из БД с типом Counter  и менем ", name, " значение = ", value))
 
 	if value != 0 {
 		return []byte(strconv.FormatInt(value, 10)), true

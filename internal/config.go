@@ -3,6 +3,7 @@ package internal
 import (
 	"flag"
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
 	"os"
 	"strconv"
@@ -69,8 +70,7 @@ func NewS() *ConfigServer {
 		Key:           getEnv("KEY", FKey),
 		DatabaseURL:   getEnv("DATABASE_DSN", FDb),
 	}
-
-	fmt.Println(cnf)
+	variables.FShowLog(fmt.Sprintf("config server: %s", cnf))
 
 	return &cnf
 }
@@ -84,22 +84,22 @@ func NewA() *ConfigAgent {
 
 	flag.Parse()
 
-	return &ConfigAgent{
+	cnf := &ConfigAgent{
 		Address:        getEnv("ADDRESS", FАddr),
 		PollInterval:   getEnvAsDur("POLL_INTERVAL", FPInterv),
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 		Key:            getEnv("KEY", FKey),
 	}
+	variables.FShowLog(fmt.Sprintf("config agent: %s", cnf))
 
+	return cnf
 }
 
 func getEnv(key string, defaultVal string) string {
 
 	if value, exists := os.LookupEnv(key); exists {
-		fmt.Println("Получили переменную окружения ", key, " в значение = ", value)
 		return value
 	}
-	fmt.Println("Взяли дефолтное значение", key, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -110,7 +110,6 @@ func getEnvAsInt(name string, defaultVal int64) int64 {
 		return int64(value)
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -122,7 +121,6 @@ func getEnvAsDur(name string, defaultVal time.Duration) time.Duration {
 		return value
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
@@ -133,7 +131,6 @@ func getEnvAsBool(name string, defaultVal bool) bool {
 		return val
 	}
 
-	fmt.Println("Взяли дефолтное значение", name, " = ", defaultVal)
 	return defaultVal
 
 }
