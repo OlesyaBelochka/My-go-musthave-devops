@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/inmemory"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -11,6 +13,9 @@ import (
 )
 
 func TestHandleUpdateMetrics(t *testing.T) {
+	storage.MGServer = inmemory.NewGaugeMS()
+	storage.MCServer = inmemory.NewCounterMS()
+
 	type want struct {
 		code        int
 		contentType string

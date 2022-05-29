@@ -284,7 +284,7 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
 	// то отправляем лесом
-	err, isHash := verificationHash(*resp)
+	isHash, err := verificationHash(*resp)
 
 	if err != nil {
 		return http.StatusBadRequest, err, isHash
@@ -549,7 +549,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Value
 
-				err, _ := verificationHash(metrics)
+				_, err := verificationHash(metrics)
 
 				if err != nil {
 
@@ -562,7 +562,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Delta
 
-				err, _ := verificationHash(metrics)
+				_, err := verificationHash(metrics)
 
 				if err != nil {
 					return
@@ -590,7 +590,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verificationHash(resp variables.Metrics) (error, bool) {
+func verificationHash(resp variables.Metrics) (bool, error) {
 
 	isHash := false
 	if resp.Hash != "" {
@@ -603,16 +603,16 @@ func verificationHash(resp variables.Metrics) (error, bool) {
 		case "counter":
 			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
 		default:
-			return errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики"), false
+			return false, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики")
 		}
 
 		fmt.Println("полученный хеш: ", getSHash, " посчитанный хеш: ", resp.Hash)
 		if getSHash != resp.Hash {
-			return errors.New("Хеши не равны"), false
+			return false, errors.New("Хеши не равны")
 		}
 		isHash = true
 	}
 
-	return nil, isHash
+	return isHash, nil
 
 }
