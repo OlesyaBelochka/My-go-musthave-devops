@@ -70,6 +70,7 @@ func NewS() *ConfigServer {
 		Key:           getEnv("KEY", FKey),
 		DatabaseURL:   getEnv("DATABASE_DSN", FDb),
 	}
+
 	variables.FShowLog(fmt.Sprintf("config server: %s", cnf))
 
 	return &cnf

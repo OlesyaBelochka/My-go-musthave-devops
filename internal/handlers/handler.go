@@ -278,7 +278,7 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	// то отправляем лесом
 	isHash := false
 	if doVerificationHash {
-		isHash, err = verificationHash(*resp)
+		isHash, err = verificationHash(*resp, config.ConfS.Key)
 	}
 
 	if err != nil {
@@ -342,7 +342,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = ", isHash))
+	variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %t", isHash))
 
 	mType := resp.MType
 	mName := resp.ID
@@ -516,7 +516,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Value
 
-				_, err := verificationHash(metrics)
+				_, err := verificationHash(metrics, config.ConfS.Key)
 
 				if err != nil {
 					variables.PrinterErr(err, "")
@@ -529,7 +529,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Delta
 
-				_, err := verificationHash(metrics)
+				_, err := verificationHash(metrics, config.ConfS.Key)
 				if err != nil {
 					variables.PrinterErr(err, "")
 					return
@@ -555,23 +555,26 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verificationHash(resp variables.Metrics) (bool, error) {
+func verificationHash(resp variables.Metrics, partKey2 string) (bool, error) {
 
 	isHash := false
 	if resp.Hash != "" {
 
 		getSHash := ""
+		partKey1 := ""
 		switch resp.MType {
 
 		case "gauge":
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+			partKey1 = fmt.Sprintf("%s:%s:%f", resp.ID, resp.MType, *resp.Value)
 		case "counter":
-			getSHash = prhash.Hash(fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta), config.ConfS.Key)
+			partKey1 = fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta)
 		default:
 			return false, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики")
 		}
 
-		str := fmt.Sprintf("полученный хеш: %s, посчитанный хеш: %s,считали для метки: %s,использовали ключ: %s", resp.Hash, getSHash, fmt.Sprintf("ID = %s Type = %s Знач = %f", resp.ID, resp.MType, *resp.Value), config.ConfS.Key)
+		getSHash = prhash.Hash(partKey1, partKey2)
+
+		str := fmt.Sprintf("полученный хеш: %s, посчитанный хеш: %s,считали для метки: %s,использовали ключ: %s", resp.Hash, getSHash, partKey1, partKey2)
 
 		if getSHash != resp.Hash {
 			return false, errors.New("Хеши не равны: " + str)

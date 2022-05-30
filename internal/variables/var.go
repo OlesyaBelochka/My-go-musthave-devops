@@ -11,8 +11,7 @@ type Gauge float64
 type Counter int64
 
 const (
-	ShowLog     = true
-	ShowFullLog = true
+	ShowLog = true
 )
 
 var errorLog = log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)

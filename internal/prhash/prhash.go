@@ -1,6 +1,7 @@
 package prhash
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -9,15 +10,14 @@ import (
 
 func Hash(s string, key string) string {
 	if key != "" {
+		h := hmac.New(sha256.New, []byte(key))
+		h.Write([]byte(s))
 
-		vSHA256 := sha256.Sum256([]byte(s + key))
-		variables.FShowLog(fmt.Sprintf("Агент увидел ключ %s, сформировал хэш ", key, hex.EncodeToString(vSHA256[:])))
+		variables.FShowLog(fmt.Sprintf("увидели ключ %s, сформировали хэш %s", key, hex.EncodeToString(h.Sum(nil))))
 
-		return hex.EncodeToString(vSHA256[:])
+		return hex.EncodeToString(h.Sum(nil))
 	} else {
-
-		variables.FShowLog(fmt.Sprintf("Получили пустой ключ, хеш не проверяем"))
-
+		variables.FShowLog("Получили пустой ключ, хеш не проверяем")
 		return ""
 	}
 }
