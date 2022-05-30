@@ -40,6 +40,11 @@ func main() {
 	go poller.PallStart(ctx)
 
 	//go reporters.ReportAgentNew(ctx, config.ConfA.Key)
+	go func() {
+		<-osSigChan
+		fmt.Println("Get signal")
+		cancel()
+	}()
 
 	for {
 		timerReport := time.NewTimer(config.ConfA.ReportInterval)
@@ -66,12 +71,6 @@ func main() {
 		}
 
 	}
-
-	go func() {
-		<-osSigChan
-		fmt.Println("Get signal")
-		cancel()
-	}()
 
 	sigEnd := <-osSigChan
 	fmt.Println("Get signal", sigEnd)
