@@ -71,8 +71,4 @@ func main() {
 		}
 
 	}
-
-	sigEnd := <-osSigChan
-	fmt.Println("Get signal", sigEnd)
-
 }
