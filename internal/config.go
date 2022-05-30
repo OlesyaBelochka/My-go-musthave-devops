@@ -2,8 +2,6 @@ package internal
 
 import (
 	"flag"
-	"fmt"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
 	"os"
 	"strconv"
@@ -71,7 +69,7 @@ func NewS() *ConfigServer {
 		DatabaseURL:   getEnv("DATABASE_DSN", FDb),
 	}
 
-	variables.FShowLog(fmt.Sprintf("config server: %s", cnf))
+	//variables.FShowLog(fmt.Sprintf("config server: %v", cnf))
 
 	return &cnf
 }
@@ -91,7 +89,7 @@ func NewA() *ConfigAgent {
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 		Key:            getEnv("KEY", FKey),
 	}
-	variables.FShowLog(fmt.Sprintf("config agent: %s", cnf))
+	//	variables.FShowLog(fmt.Sprintf("config agent: %v", cnf))
 
 	return cnf
 }

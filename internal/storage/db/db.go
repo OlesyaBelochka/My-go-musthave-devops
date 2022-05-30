@@ -73,7 +73,7 @@ func (r CounterBDStorage) Set(name string, val []byte) {
 	_, err := r.bd.Exec(insertSQL, name, "counter", byteToInt)
 
 	if err != nil {
-		variables.PrinterErr(err, fmt.Sprintf("ошибка при вставке counter %s, %f", name, byteToInt))
+		variables.PrinterErr(err, fmt.Sprintf("ошибка при вставке counter %s, %d", name, byteToInt))
 		return
 	}
 
@@ -180,7 +180,7 @@ func (r GaugeBDStorage) Get(name string) ([]byte, bool) {
 	`
 	r.bd.QueryRow(selectSQL, name, "gauge").Scan(&value)
 
-	variables.FShowLog(fmt.Sprintf("(Get: GaugeBDStorage) получили значение метрики из БД с типом Gauge  и менем ", name, " значение = ", value))
+	variables.FShowLog(fmt.Sprintf("(Get: GaugeBDStorage) получили значение метрики из БД с типом Gauge  и менем, %s, значение = %f", name, value))
 
 	if value != 0 {
 		return []byte(strconv.FormatFloat(value, 'f', -1, 64)), true
@@ -202,7 +202,7 @@ func (r CounterBDStorage) Get(name string) ([]byte, bool) {
 	//fmt.Print("выполняем запрос Get Counter :", selectSQL)
 	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
 
-	variables.FShowLog(fmt.Sprintf("(Get: CounterBDStorage) получили значение метрики из БД с типом Counter  и менем ", name, " значение = ", value))
+	variables.FShowLog(fmt.Sprintf("(Get: CounterBDStorage) получили значение метрики из БД с типом Counter  и менем %s, значение = %v", name, value))
 
 	if value != 0 {
 		return []byte(strconv.FormatInt(value, 10)), true

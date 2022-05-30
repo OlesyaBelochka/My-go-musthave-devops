@@ -243,7 +243,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool, doVerificationHash bool) (int, error, bool) {
+func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool, doVerificationHash bool) (int, bool, error) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		*needCompression = true
@@ -253,14 +253,14 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	variables.PrinterErr(err, "(readBodyJSONRequest) Ошибка чтения тела запроса : ")
 
 	if err != nil {
-		return http.StatusInternalServerError, err, false
+		return http.StatusInternalServerError, false, err
 	}
 
 	if *needCompression {
 		body, err = compression.Decompress(body)
 		variables.PrinterErr(err, "#(readBodyJSONRequest)ошибка декомпрессии: ")
 		if err != nil {
-			return http.StatusInternalServerError, err, false
+			return http.StatusInternalServerError, false, err
 		}
 	}
 
@@ -271,7 +271,7 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 		variables.PrinterErr(err, "can't unmarshal: ")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
-		return http.StatusInternalServerError, err, false
+		return http.StatusInternalServerError, false, err
 	}
 
 	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
@@ -283,10 +283,10 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 
 	if err != nil {
 		variables.PrinterErr(err, "")
-		return http.StatusBadRequest, err, isHash
+		return http.StatusBadRequest, isHash, err
 	}
 
-	return http.StatusOK, nil, isHash
+	return http.StatusOK, isHash, nil
 
 }
 
@@ -320,10 +320,7 @@ func readBodySliceJSONRequest(w http.ResponseWriter, r *http.Request, resp *[]va
 		return http.StatusInternalServerError, err
 	}
 
-	return http.StatusInternalServerError, err
-
 	return http.StatusOK, nil
-
 }
 
 // HandleGetMetricJSON возвращает метрику в виде JSON
@@ -334,7 +331,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, err, isHash := readBodyJSONRequest(w, r, &resp, &needCompression, false)
+	st, isHash, err := readBodyJSONRequest(w, r, &resp, &needCompression, false)
 
 	if err != nil {
 		// это значит что мы по какой-то причине не смогли выполнить процедуру выше и отправляем статус
@@ -411,7 +408,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, err, _ := readBodyJSONRequest(w, r, &metrics, &needCompression, true)
+	st, _, err := readBodyJSONRequest(w, r, &metrics, &needCompression, true)
 
 	if err == nil {
 
