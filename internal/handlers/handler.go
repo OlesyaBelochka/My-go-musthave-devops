@@ -340,7 +340,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if config.ConfS.Key != "" {
-		variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %t", config.ConfS.Key))
+		variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %v", config.ConfS.Key))
 	}
 
 	mType := resp.MType
@@ -365,7 +365,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.Value = &valFl
 		if config.ConfS.Key != "" {
-			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%d", resp.ID, resp.Value), config.ConfS.Key)
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%d", resp.ID, valFl), config.ConfS.Key)
 		}
 
 	case "counter":
@@ -378,7 +378,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 		resp.Delta = &valInt
 		if config.ConfS.Key != "" {
-			resp.Hash = prhash.Hash(fmt.Sprintf("%s:counter:%d", resp.ID, resp.Delta), config.ConfS.Key)
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:counter:%d", resp.ID, valInt), config.ConfS.Key)
 		}
 	}
 
