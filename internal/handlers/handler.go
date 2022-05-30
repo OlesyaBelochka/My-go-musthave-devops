@@ -365,7 +365,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.Value = &valFl
 		if config.ConfS.Key != "" {
-			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%d", resp.ID, valFl), config.ConfS.Key)
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%f", resp.ID, valFl), config.ConfS.Key)
 		}
 
 	case "counter":
