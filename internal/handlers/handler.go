@@ -243,7 +243,7 @@ func HandleUpdateMetrics(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool, doVerificationHash bool) (int, bool, error) {
+func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables.Metrics, needCompression *bool, doVerificationHash bool) (int, error) {
 
 	if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
 		*needCompression = true
@@ -253,14 +253,14 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	variables.PrinterErr(err, "(readBodyJSONRequest) Ошибка чтения тела запроса : ")
 
 	if err != nil {
-		return http.StatusInternalServerError, false, err
+		return http.StatusInternalServerError, err
 	}
 
 	if *needCompression {
 		body, err = compression.Decompress(body)
 		variables.PrinterErr(err, "#(readBodyJSONRequest)ошибка декомпрессии: ")
 		if err != nil {
-			return http.StatusInternalServerError, false, err
+			return http.StatusInternalServerError, err
 		}
 	}
 
@@ -271,22 +271,22 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 		variables.PrinterErr(err, "can't unmarshal: ")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
-		return http.StatusInternalServerError, false, err
+		return http.StatusInternalServerError, err
 	}
 
 	// Проверим пришла ли хэш функция и если она пришла но не равна получаемой на сервере
 	// то отправляем лесом
-	isHash := false
+
 	if doVerificationHash {
-		isHash, err = verificationHash(*resp, config.ConfS.Key)
+		err = verificationHash(*resp, config.ConfS.Key)
 	}
 
 	if err != nil {
 		variables.PrinterErr(err, "")
-		return http.StatusBadRequest, isHash, err
+		return http.StatusBadRequest, err
 	}
 
-	return http.StatusOK, isHash, nil
+	return http.StatusOK, nil
 
 }
 
@@ -331,7 +331,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, isHash, err := readBodyJSONRequest(w, r, &resp, &needCompression, false)
+	st, err := readBodyJSONRequest(w, r, &resp, &needCompression, false)
 
 	if err != nil {
 		// это значит что мы по какой-то причине не смогли выполнить процедуру выше и отправляем статус
@@ -339,7 +339,9 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %t", isHash))
+	if config.ConfS.Key != "" {
+		variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %t", config.ConfS.Key))
+	}
 
 	mType := resp.MType
 	mName := resp.ID
@@ -362,6 +364,9 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		resp.Value = &valFl
+		if config.ConfS.Key != "" {
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%d", resp.ID, resp.Value), config.ConfS.Key)
+		}
 
 	case "counter":
 		valInt, err := strconv.ParseInt(val, 10, 64)
@@ -372,6 +377,9 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp.Delta = &valInt
+		if config.ConfS.Key != "" {
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:counter:%d", resp.ID, resp.Delta), config.ConfS.Key)
+		}
 	}
 
 	strJSON, err := json.Marshal(resp)
@@ -394,6 +402,10 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
+	if config.ConfS.Key != "" {
+		variables.FShowLog("отправили структуру на сервер с хэшами так как сервер имеет ключ" + string(strJSON))
+	}
+
 	_, err = w.Write(strJSON)
 
 	if err != nil {
@@ -408,7 +420,7 @@ func HandleUpdateMetricsJSON(w http.ResponseWriter, r *http.Request) {
 		needCompression bool
 	)
 
-	st, _, err := readBodyJSONRequest(w, r, &metrics, &needCompression, true)
+	st, err := readBodyJSONRequest(w, r, &metrics, &needCompression, true)
 
 	if err == nil {
 
@@ -513,7 +525,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Value
 
-				_, err := verificationHash(metrics, config.ConfS.Key)
+				err := verificationHash(metrics, config.ConfS.Key)
 
 				if err != nil {
 					variables.PrinterErr(err, "")
@@ -526,7 +538,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Delta
 
-				_, err := verificationHash(metrics, config.ConfS.Key)
+				err := verificationHash(metrics, config.ConfS.Key)
 				if err != nil {
 					variables.PrinterErr(err, "")
 					return
@@ -552,9 +564,8 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func verificationHash(resp variables.Metrics, partKey2 string) (bool, error) {
+func verificationHash(resp variables.Metrics, partKey2 string) error {
 
-	isHash := false
 	if resp.Hash != "" {
 
 		getSHash := ""
@@ -566,7 +577,7 @@ func verificationHash(resp variables.Metrics, partKey2 string) (bool, error) {
 		case "counter":
 			partKey1 = fmt.Sprintf("%s:%s:%d", resp.ID, resp.MType, *resp.Delta)
 		default:
-			return false, errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики")
+			return errors.New("не смогли посчитать хэш на сервере так как получен неверны тип метрики")
 		}
 
 		getSHash = prhash.Hash(partKey1, partKey2)
@@ -574,11 +585,10 @@ func verificationHash(resp variables.Metrics, partKey2 string) (bool, error) {
 		str := fmt.Sprintf("полученный хеш: %s, посчитанный хеш: %s,считали для метки: %s,использовали ключ: %s", resp.Hash, getSHash, partKey1, partKey2)
 
 		if getSHash != resp.Hash {
-			return false, errors.New("Хеши не равны: " + str)
+			return errors.New("Хеши не равны: " + str)
 		}
-		isHash = true
 	}
 
-	return isHash, nil
+	return nil
 
 }
