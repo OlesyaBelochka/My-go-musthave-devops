@@ -178,11 +178,20 @@ func (r GaugeBDStorage) Get(name string) ([]byte, bool) {
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	r.bd.QueryRow(selectSQL, name, "gauge").Scan(&value)
+	if r.bd == nil {
+		return []byte(""), false // пустой список байт
+	}
+	check := new(string)
+	stmt, err := r.bd.Prepare(selectSQL)
+	if err != nil {
+		return []byte(""), false
+	}
 
-	variables.FShowLog(fmt.Sprintf("(Get: GaugeBDStorage) получили значение метрики из БД с типом Gauge  и менем, %s, значение = %f", name, value))
+	row := stmt.QueryRow(name, "gauge")
 
-	if value != 0 {
+	if err := row.Scan(check); err != sql.ErrNoRows {
+		r.bd.QueryRow(selectSQL, name, "gauge").Scan(&value)
+		variables.FShowLog(fmt.Sprintf("(Get: GaugeBDStorage) получили значение метрики из БД с типом Gauge  и менем, %s, значение = %f", name, value))
 		return []byte(strconv.FormatFloat(value, 'f', -1, 64)), true
 	}
 
@@ -191,7 +200,6 @@ func (r GaugeBDStorage) Get(name string) ([]byte, bool) {
 }
 
 func (r CounterBDStorage) Get(name string) ([]byte, bool) {
-	fmt.Print("Зашли в функцию Get Counter")
 
 	var value int64
 	selectSQL := `
@@ -199,12 +207,18 @@ func (r CounterBDStorage) Get(name string) ([]byte, bool) {
 	FROM metrics 
 	WHERE id=$1 AND mtype=$2;
 	`
-	//fmt.Print("выполняем запрос Get Counter :", selectSQL)
-	r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
-
-	variables.FShowLog(fmt.Sprintf("(Get: CounterBDStorage) получили значение метрики из БД с типом Counter  и менем %s, значение = %v", name, value))
-
-	if value != 0 {
+	if r.bd == nil {
+		return []byte(""), false // пустой список байт
+	}
+	check := new(string)
+	stmt, err := r.bd.Prepare(selectSQL)
+	if err != nil {
+		return []byte(""), false
+	}
+	row := stmt.QueryRow(name, "counter")
+	if err := row.Scan(check); err != sql.ErrNoRows {
+		r.bd.QueryRow(selectSQL, name, "counter").Scan(&value)
+		variables.FShowLog(fmt.Sprintf("(Get: CounterBDStorage) получили значение метрики из БД с типом Counter  и менем, %s, значение = %v", name, value))
 		return []byte(strconv.FormatInt(value, 10)), true
 	}
 
