@@ -2,9 +2,12 @@ package poller
 
 import (
 	"context"
+	"fmt"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 	"math/rand"
 	"runtime"
 	"strconv"
@@ -19,8 +22,7 @@ func PallStart(ctx context.Context) {
 
 			variables.FShowLog("#update..")
 
-			runtime.ReadMemStats(variables.MemSt)
-			PallMetrics(variables.MemSt)
+			PallMetrics()
 
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done()")
@@ -30,8 +32,9 @@ func PallStart(ctx context.Context) {
 
 }
 
-func PallMetrics(st *runtime.MemStats) {
-	runtime.ReadMemStats(variables.MemSt)
+func pallRuntimeMetrics() {
+	st := new(runtime.MemStats)
+	runtime.ReadMemStats(st)
 
 	storage.MGAgent.Set("Alloc", []byte(strconv.FormatFloat(float64(st.Alloc), 'f', -1, 64)))
 	storage.MGAgent.Set("BuckHashSys", []byte(strconv.FormatFloat(float64(st.BuckHashSys), 'f', -1, 64)))
@@ -60,7 +63,32 @@ func PallMetrics(st *runtime.MemStats) {
 	storage.MGAgent.Set("StackSys", []byte(strconv.FormatFloat(float64(st.StackSys), 'f', -1, 64)))
 	storage.MGAgent.Set("Sys", []byte(strconv.FormatFloat(float64(st.Sys), 'f', -1, 64)))
 	storage.MGAgent.Set("TotalAlloc", []byte(strconv.FormatFloat(float64(st.TotalAlloc), 'f', -1, 64)))
-	storage.MGAgent.Set("RandomValue", []byte(strconv.FormatFloat(float64(rand.Int()), 'f', -1, 64)))
 
+	storage.MGAgent.Set("RandomValue", []byte(strconv.FormatFloat(float64(rand.Int()), 'f', -1, 64)))
 	storage.MCAgent.Set("PollCount", []byte(strconv.FormatInt(int64(1), 10)))
+}
+
+func pallGopsutilMetrics() {
+
+	m, err := mem.VirtualMemory()
+	if err != nil {
+		variables.PrinterErr(err, "не удалось получить метки памяти")
+		return
+	}
+	storage.MGAgent.Set("TotalMemory", []byte(strconv.FormatFloat(float64(m.Total), 'f', -1, 64)))
+	storage.MGAgent.Set("FreeMemory", []byte(strconv.FormatFloat(float64(m.Free), 'f', -1, 64)))
+
+	percentage, _ := cpu.Percent(0, true)
+
+	for idx, cpupercent := range percentage {
+		storage.MGAgent.Set(fmt.Sprintf("CPUutilization%d", idx+1), []byte(strconv.FormatFloat(float64(cpupercent), 'f', -1, 64)))
+	}
+
+}
+
+func PallMetrics() {
+
+	pallRuntimeMetrics()
+	pallGopsutilMetrics()
+
 }

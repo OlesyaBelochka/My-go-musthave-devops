@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"runtime"
 )
 
 type Gauge float64
@@ -18,8 +17,6 @@ var errorLog = log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 var infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 
 var MG = map[string]Gauge{}
-
-var MemSt = new(runtime.MemStats)
 
 var MC = map[string]Counter{}
 
