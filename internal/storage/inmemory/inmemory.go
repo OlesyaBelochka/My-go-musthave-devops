@@ -37,7 +37,7 @@ func NewGaugeMS() *GaugeMemoryStorage {
 	}
 }
 
-func (M GaugeMemoryStorage) Set(name string, val []byte) {
+func (M *GaugeMemoryStorage) Set(name string, val []byte) {
 
 	byteToFloat, _ := strconv.ParseFloat(string(val), 64)
 	M.Mtx.Lock()
@@ -46,7 +46,7 @@ func (M GaugeMemoryStorage) Set(name string, val []byte) {
 	variables.FShowLog(fmt.Sprintf("(Set :GaugeMemoryStorage)  %s, in val = %f \n", name, byteToFloat))
 }
 
-func (M CounterMemoryStorage) Set(name string, val []byte) {
+func (M *CounterMemoryStorage) Set(name string, val []byte) {
 
 	byteToInt, _ := strconv.ParseInt(string(val), 10, 64)
 	M.Mtx.Lock()
@@ -55,19 +55,19 @@ func (M CounterMemoryStorage) Set(name string, val []byte) {
 	variables.FShowLog(fmt.Sprintf("(Set: CounterMemoryStorage) %s, in val = %d \n", name, M.M[name]))
 }
 
-func (M GaugeMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+func (M *GaugeMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
 	for i := 0; i < len(name); i++ {
 		M.Set(name[i], val[i])
 	}
 }
 
-func (M CounterMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
+func (M *CounterMemoryStorage) SetSlice(ctx context.Context, name []string, val [][]byte) {
 	for i := 0; i < len(name); i++ {
 		M.Set(name[i], val[i])
 	}
 }
 
-func (M GaugeMemoryStorage) Get(s string) ([]byte, bool) {
+func (M *GaugeMemoryStorage) Get(s string) ([]byte, bool) {
 	M.Mtx.RLock()
 	defer M.Mtx.RUnlock()
 
@@ -77,7 +77,7 @@ func (M GaugeMemoryStorage) Get(s string) ([]byte, bool) {
 	return []byte(""), false // пустой список байт
 
 }
-func (M CounterMemoryStorage) Get(s string) ([]byte, bool) {
+func (M *CounterMemoryStorage) Get(s string) ([]byte, bool) {
 	M.Mtx.RLock()
 	defer M.Mtx.RUnlock()
 
