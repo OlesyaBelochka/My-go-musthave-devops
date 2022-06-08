@@ -32,11 +32,11 @@ const (
 	//   of "photos" below.
 	photosSchema = `
 CREATE TABLE IF NOT EXISTS metrics (
-  id           TEXT,
-  mtype 	  TEXT,
-  delta		   BIGINT,
-  val        DOUBLE PRECISION,
-  PRIMARY KEY (id, mtype)
+ id           TEXT,
+ mtype 	  TEXT,
+ delta		   BIGINT,
+ val        DOUBLE PRECISION,
+ PRIMARY KEY (id, mtype)
 );`
 )
 
