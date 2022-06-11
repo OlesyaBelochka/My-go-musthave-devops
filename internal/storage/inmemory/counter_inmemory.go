@@ -38,8 +38,6 @@ func (M *CounterMemoryStorage) SetSlice(ctx context.Context, name []string, val 
 }
 
 func (M *CounterMemoryStorage) Get(s string) ([]byte, bool) {
-	//M.Mtx.RLock()
-	//defer M.Mtx.RUnlock()
 
 	if value, inMap := M.M[s]; inMap {
 		return []byte(strconv.FormatInt(int64(value), 10)), true

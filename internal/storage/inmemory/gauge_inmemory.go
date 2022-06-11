@@ -40,8 +40,6 @@ func (M *GaugeMemoryStorage) SetSlice(ctx context.Context, name []string, val []
 }
 
 func (M *GaugeMemoryStorage) Get(s string) ([]byte, bool) {
-	//M.Mtx.RLock()
-	//defer M.Mtx.RUnlock()
 
 	if value, inMap := M.M[s]; inMap {
 		return []byte(strconv.FormatFloat(float64(value), 'f', -1, 64)), true
