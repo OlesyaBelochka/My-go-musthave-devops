@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
@@ -48,7 +48,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Value
 
-				err := verificationHash(metrics, internal.ConfS.Key)
+				err := verificationHash(metrics, config.VarConfServer.Key)
 
 				if err != nil {
 					variables.PrinterErr(err, "")
@@ -61,7 +61,7 @@ func HandleUpdatesSliceMetricsJSON(w http.ResponseWriter, r *http.Request) {
 
 				val := *metrics.Delta
 
-				err := verificationHash(metrics, internal.ConfS.Key)
+				err := verificationHash(metrics, config.VarConfServer.Key)
 				if err != nil {
 					variables.PrinterErr(err, "")
 					return

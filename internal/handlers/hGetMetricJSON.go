@@ -3,8 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
@@ -28,8 +28,8 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if internal.ConfS.Key != "" {
-		variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %v", internal.ConfS.Key))
+	if config.VarConfServer.Key != "" {
+		variables.FShowLog(fmt.Sprintf("при отправке с сервера вычислять хеш = %v", config.VarConfServer.Key))
 	}
 
 	mType := resp.MType
@@ -53,8 +53,8 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		resp.Value = &valFl
-		if internal.ConfS.Key != "" {
-			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%f", resp.ID, valFl), internal.ConfS.Key)
+		if config.VarConfServer.Key != "" {
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:gauge:%f", resp.ID, valFl), config.VarConfServer.Key)
 		}
 
 	case "counter":
@@ -66,8 +66,8 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp.Delta = &valInt
-		if internal.ConfS.Key != "" {
-			resp.Hash = prhash.Hash(fmt.Sprintf("%s:counter:%d", resp.ID, valInt), internal.ConfS.Key)
+		if config.VarConfServer.Key != "" {
+			resp.Hash = prhash.Hash(fmt.Sprintf("%s:counter:%d", resp.ID, valInt), config.VarConfServer.Key)
 		}
 	}
 
@@ -91,7 +91,7 @@ func HandleGetMetricJSON(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	if internal.ConfS.Key != "" {
+	if config.VarConfServer.Key != "" {
 		variables.FShowLog("отправили структуру на сервер с хэшами так как сервер имеет ключ" + string(strJSON))
 	}
 

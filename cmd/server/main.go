@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/files"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/handlers"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
@@ -19,13 +19,13 @@ import (
 
 func main() {
 
-	config.ConfS = config.NewS()
+	config.VarConfServer = config.NewServerConfig()
 
 	storage.MGServer = inmemory.NewGaugeMS()
 	storage.MCServer = inmemory.NewCounterMS()
 
-	if config.ConfS.Restore {
-		if config.ConfS.DatabaseURL == "" {
+	if config.VarConfServer.Restore {
+		if config.VarConfServer.DatabaseURL == "" {
 			//Использование этого параметра имеет приоритет над параметром
 			//file-storage-path и автоматически задействует функциональность
 			//сервера БД
@@ -37,7 +37,7 @@ func main() {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			dataBase, err := db.OpenDB(config.ConfS)
+			dataBase, err := db.OpenDB(config.VarConfServer)
 
 			if err != nil {
 				fmt.Println("ошибка при открытии БД", err)
@@ -53,7 +53,7 @@ func main() {
 		}
 	}
 
-	log.Println("Server has started, listening IP: " + config.ConfS.Address)
+	log.Println("Server has started, listening IP: " + config.VarConfServer.Address)
 
 	r := chi.NewRouter()
 
@@ -76,8 +76,8 @@ func main() {
 	r.Post("/value", handlers.HandleGetMetricJSON)
 	r.Post("/updates", handlers.HandleUpdatesSliceMetricsJSON)
 
-	if config.ConfS.Address != "" {
-		err := http.ListenAndServe(config.ConfS.Address, r)
+	if config.VarConfServer.Address != "" {
+		err := http.ListenAndServe(config.VarConfServer.Address, r)
 		variables.PrinterErr(err, "Error server's listetning")
 	}
 

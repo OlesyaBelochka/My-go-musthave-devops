@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/compression"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/prhash"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
@@ -192,7 +192,7 @@ func readBodyJSONRequest(w http.ResponseWriter, r *http.Request, resp *variables
 	// то отправляем лесом
 
 	if doVerificationHash {
-		err = verificationHash(*resp, internal.ConfS.Key)
+		err = verificationHash(*resp, config.VarConfServer.Key)
 	}
 
 	if err != nil {

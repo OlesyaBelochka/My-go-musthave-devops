@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/poller"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/reporters"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
@@ -17,13 +17,13 @@ import (
 
 func main() {
 	config.Client = http.Client{}
-	config.ConfA = config.NewA()
-	log.Println("Client started, update and report to IP ", config.ConfA.Address)
+	config.VarConfAgent = config.NewAgentConfig()
+	log.Println("Client started, update and report to IP ", config.VarConfAgent.Address)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	if variables.ShowLog {
-		fmt.Printf("Address %s, ReportInterval = %d, PollInterval =  %d \n", config.ConfA.Address, config.ConfA.ReportInterval, config.ConfA.PollInterval)
+		fmt.Printf("Address %s, ReportInterval = %d, PollInterval =  %d \n", config.VarConfAgent.Address, config.VarConfAgent.ReportInterval, config.VarConfAgent.PollInterval)
 	}
 	config.EndpointAgent = "/update/"
 
@@ -32,7 +32,6 @@ func main() {
 
 	go poller.PallStart(ctx)
 
-	//go reporters.ReportAgentNew(ctx, config.ConfA.Key)
 	go func() {
 		<-osSigChan
 		fmt.Println("Get signal")
@@ -40,23 +39,21 @@ func main() {
 	}()
 
 	for {
-		timerReport := time.NewTimer(config.ConfA.ReportInterval)
+		timerReport := time.NewTimer(config.VarConfAgent.ReportInterval)
 		select {
 		case <-timerReport.C:
 			gR := reporters.NewGaugeReporter()
 			cR := reporters.NewCounterReporter()
-			fmt.Println(gR)
-			fmt.Println(cR)
 
-			var reporters []reporters.ReporterInterface
+			var reporters []reporters.Reporter
 			rep := append(reporters, gR, cR)
 
-			for _, reporterInterface := range rep {
-				reporterInterface.Report(config.ConfA.Key)
+			for _, r := range rep {
+				r.Report(config.VarConfAgent.Key)
 			}
 
 			variables.FShowLog("#reporting..")
-			//		reportMetrics()
+
 		case <-ctx.Done():
 			variables.FShowLog("ctx.Done(): Report")
 			return

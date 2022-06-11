@@ -1,4 +1,4 @@
-package internal
+package config
 
 import (
 	"flag"
@@ -28,9 +28,9 @@ const (
 )
 
 var (
-	ConfA  *ConfigAgent
-	ConfS  *ConfigServer
-	Client http.Client
+	VarConfAgent  *ConfigAgent
+	VarConfServer *ConfigServer
+	Client        http.Client
 )
 
 type ConfigServer struct {
@@ -49,7 +49,7 @@ type ConfigAgent struct {
 	Key            string
 }
 
-func NewS() *ConfigServer {
+func NewServerConfig() *ConfigServer {
 
 	flag.BoolVar(&FRstor, "r", DefaultRestore, "RESTORE=<ЗНАЧЕНИЕ>")
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
@@ -69,12 +69,10 @@ func NewS() *ConfigServer {
 		DatabaseURL:   getEnv("DATABASE_DSN", FDb),
 	}
 
-	//variables.FShowLog(fmt.Sprintf("config server: %v", cnf))
-
 	return &cnf
 }
 
-func NewA() *ConfigAgent {
+func NewAgentConfig() *ConfigAgent {
 
 	flag.StringVar(&FАddr, "a", DefaultAddress, "ADDRESS=<ЗНАЧЕНИЕ>")
 	flag.DurationVar(&FRpInterv, "r", DefaultReportInterval, "REPORT_INTERVAL=<ЗНАЧЕНИЕ>")
@@ -89,7 +87,6 @@ func NewA() *ConfigAgent {
 		ReportInterval: getEnvAsDur("REPORT_INTERVAL", FRpInterv),
 		Key:            getEnv("KEY", FKey),
 	}
-	//	variables.FShowLog(fmt.Sprintf("config agent: %v", cnf))
 
 	return cnf
 }
@@ -99,16 +96,6 @@ func getEnv(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
-	return defaultVal
-
-}
-
-func getEnvAsInt(name string, defaultVal int64) int64 {
-	valueStr := getEnv(name, "")
-	if value, err := strconv.ParseInt(valueStr, 10, 64); err == nil {
-		return int64(value)
-	}
-
 	return defaultVal
 
 }

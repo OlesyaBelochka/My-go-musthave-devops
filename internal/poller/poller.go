@@ -3,7 +3,7 @@ package poller
 import (
 	"context"
 	"fmt"
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"github.com/shirou/gopsutil/cpu"
@@ -16,7 +16,7 @@ import (
 
 func PallStart(ctx context.Context) {
 	for {
-		timer := time.NewTimer(internal.ConfA.PollInterval)
+		timer := time.NewTimer(config.VarConfAgent.PollInterval)
 		select {
 		case <-timer.C:
 

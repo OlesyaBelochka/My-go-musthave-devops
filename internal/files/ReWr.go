@@ -1,7 +1,7 @@
 package files
 
 import (
-	"github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"io"
@@ -14,7 +14,7 @@ import (
 
 func saveMetricsIntoFile() {
 
-	newWriter, err := variables.NewWriter(internal.ConfS.StoreFile)
+	newWriter, err := variables.NewWriter(config.VarConfServer.StoreFile)
 
 	if err != nil {
 		variables.PrinterErr(err, "(RestoreMetricsFromFile)can't open file, error: ")
@@ -57,7 +57,7 @@ func saveMetricsIntoFile() {
 
 func Start() {
 
-	timerStore := time.NewTimer(internal.ConfS.StoreInterval * time.Second)
+	timerStore := time.NewTimer(config.VarConfServer.StoreInterval * time.Second)
 
 	osSigChan := make(chan os.Signal, 4)
 	signal.Notify(osSigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -78,7 +78,7 @@ func Start() {
 
 func RestoreMetricsFromFile() {
 
-	readerM, err := variables.NewReader(internal.ConfS.StoreFile)
+	readerM, err := variables.NewReader(config.VarConfServer.StoreFile)
 	variables.PrinterErr(err, "(RestoreMetricsFromFile) не смогли создать NewReader, ошибка: ")
 
 	defer readerM.Close()

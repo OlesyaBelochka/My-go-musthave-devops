@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	config "github.com/OlesyaBelochka/My-go-musthave-devops/internal"
+	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/config"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/storage/db"
 	"github.com/OlesyaBelochka/My-go-musthave-devops/internal/variables"
 	"net/http"
@@ -15,7 +15,7 @@ func HandlePingDB(w http.ResponseWriter, r *http.Request) {
 
 	defer cancel()
 
-	dataBase, err := db.OpenDB(config.ConfS)
+	dataBase, err := db.OpenDB(config.VarConfServer)
 
 	if err != nil {
 		variables.PrinterErr(err, "#(HandlePingDB) ошибка при открытии БД: ")
