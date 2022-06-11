@@ -14,7 +14,7 @@ import (
 
 func saveMetricsIntoFile() {
 
-	newWriter, err := variables.NewWriter(config.VarConfServer.StoreFile)
+	newWriter, err := NewWriter(config.VarConfServer.StoreFile)
 
 	if err != nil {
 		variables.PrinterErr(err, "(RestoreMetricsFromFile)can't open file, error: ")
@@ -78,7 +78,7 @@ func Start() {
 
 func RestoreMetricsFromFile() {
 
-	readerM, err := variables.NewReader(config.VarConfServer.StoreFile)
+	readerM, err := NewReader(config.VarConfServer.StoreFile)
 	variables.PrinterErr(err, "(RestoreMetricsFromFile) не смогли создать NewReader, ошибка: ")
 
 	defer readerM.Close()
